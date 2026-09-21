@@ -1,3 +1,11 @@
+Metadata-Version: 2.4
+Name: stiffened-plate-calculator
+Version: 0.1.0
+Summary: Interactive calculations for stiffened rectangular steel plates
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+Requires-Dist: streamlit<2,>=1.64
+
 # Stiffened Plate Calculator
 
 An interactive Python application for evaluating rectangular steel plates with one-way stiffeners under uniform pressure.

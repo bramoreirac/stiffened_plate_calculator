@@ -372,13 +372,22 @@ Deliverables:
 - `tests/test_sections.py`
 - `docs/PHASE_4_VERIFICATION.md`
 
-### Phase 5 — Build the interactive interface
+### Phase 5 — Build the interactive interface — Complete
 
 - Create the Streamlit input form.
 - Add results, utilization ratios, and pass/fail presentation.
 - Add intermediate-calculation and assumption views.
 - Test realistic input changes and invalid entries.
 - Show which limit-state checks are implemented for the selected section.
+
+Deliverables:
+
+- `app.py`
+- `src/stiffened_plate/presentation.py`
+- `tests/test_presentation.py`
+- `tests/test_streamlit_app.py`
+- `docs/PHASE_5_INTERFACE.md`
+- Streamlit dependency declaration in `pyproject.toml`
 
 ### Phase 6 — Review the CCCC prototype
 

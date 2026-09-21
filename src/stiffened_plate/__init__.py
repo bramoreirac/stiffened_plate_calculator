@@ -1,5 +1,17 @@
 """Calculation components for the stiffened plate calculator."""
 
+from .calculations import InputValidationError, analyze_cccc, validate_cccc_input
+from .coefficients import CCCC_COEFFICIENT_TABLE, cccc_coefficients
+from .models import (
+    AnalysisChecks,
+    BoundaryCondition,
+    CalculationModel,
+    CheckResult,
+    CheckStatus,
+    CcccAnalysisInput,
+    CcccAnalysisResult,
+    StiffenerOrientation,
+)
 from .sections import (
     AngleSection,
     ChannelAttachment,
@@ -18,48 +30,31 @@ from .sections import (
 )
 
 __all__ = [
-    "AngleSection",
-    "ChannelAttachment",
-    "ChannelSection",
-    "CompositeSection",
-    "FlatBarSection",
-    "Handedness",
-    "RectangularHollowSection",
-    "Rectangle",
-    "RhsAttachment",
-    "SectionGeometry",
-    "SectionProperties",
-    "TeeAttachment",
-    "TeeSection",
-    "calculate_properties",
-]
-"""Stiffened plate calculation package."""
-
-from .calculations import InputValidationError, analyze_cccc, validate_cccc_input
-from .coefficients import CCCC_COEFFICIENT_TABLE, cccc_coefficients
-from .models import (
-    AnalysisChecks,
-    BoundaryCondition,
-    CalculationModel,
-    CheckResult,
-    CheckStatus,
-    CcccAnalysisInput,
-    CcccAnalysisResult,
-    StiffenerOrientation,
-)
-
-__all__ = [
     "AnalysisChecks",
+    "AngleSection",
     "BoundaryCondition",
     "CCCC_COEFFICIENT_TABLE",
     "CalculationModel",
+    "ChannelAttachment",
+    "ChannelSection",
     "CheckResult",
     "CheckStatus",
+    "CompositeSection",
     "CcccAnalysisInput",
     "CcccAnalysisResult",
+    "FlatBarSection",
+    "Handedness",
     "InputValidationError",
+    "Rectangle",
+    "RectangularHollowSection",
+    "RhsAttachment",
+    "SectionGeometry",
+    "SectionProperties",
     "StiffenerOrientation",
+    "TeeAttachment",
+    "TeeSection",
     "analyze_cccc",
+    "calculate_properties",
     "cccc_coefficients",
     "validate_cccc_input",
 ]
