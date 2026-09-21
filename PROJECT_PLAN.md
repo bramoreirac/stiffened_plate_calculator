@@ -337,13 +337,23 @@ Deliverables:
 - `tests/test_sections.py`
 - `docs/PHASE_2_SECTION_ENGINE.md`
 
-### Phase 3 — Build the plate calculation engine
+### Phase 3 — Build the plate calculation engine — Complete
 
 - Create typed input and result models.
 - Implement CCCC coefficient interpolation.
 - Implement common calculations.
 - Implement long-span and short-span orientation logic.
 - Add validation and clear calculation exceptions.
+
+Deliverables:
+
+- `src/stiffened_plate/models.py`
+- `src/stiffened_plate/coefficients.py`
+- `src/stiffened_plate/calculations.py`
+- `tests/test_coefficients.py`
+- `tests/test_cccc_calculations.py`
+- `tests/test_validation.py`
+- `docs/PHASE_3_CALCULATION_ENGINE.md`
 
 ### Phase 4 — Add automated verification
 

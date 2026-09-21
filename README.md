@@ -58,3 +58,5 @@ See [PROJECT_PLAN.md](PROJECT_PLAN.md) for the detailed scope, architecture, imp
 Phase 1 extraction of the two CCCC spreadsheets is documented in [docs/PHASE_1_CCCC_CALCULATION_SPEC.md](docs/PHASE_1_CCCC_CALCULATION_SPEC.md). Machine-readable regression values are stored in [reference/cccc_golden_cases.json](reference/cccc_golden_cases.json).
 
 Phase 2 produced the reusable section-property engine described in [docs/PHASE_2_SECTION_ENGINE.md](docs/PHASE_2_SECTION_ENGINE.md). It supports flat bars, angles, T-sections, RHS/SHS, channels, attachment orientation, and composite action with a tributary plate strip.
+
+Phase 3 produced the typed CCCC plate calculation engine described in [docs/PHASE_3_CALCULATION_ENGINE.md](docs/PHASE_3_CALCULATION_ENGINE.md). It supports both stiffener orientations, consumes every Phase 2 section family, validates inputs, preserves auditable intermediate values, and reproduces both CCCC workbook reference cases. Stability, connection, and combined-stress checks remain explicitly marked as not implemented.
