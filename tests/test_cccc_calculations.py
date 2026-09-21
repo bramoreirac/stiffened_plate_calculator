@@ -1,6 +1,7 @@
 import json
 import sys
 import unittest
+from dataclasses import replace
 from pathlib import Path
 
 
@@ -203,6 +204,46 @@ class CcccCalculationTests(unittest.TestCase):
                     result.checks.stiffener_stability.status,
                     CheckStatus.NOT_IMPLEMENTED,
                 )
+
+    def test_unstiffened_short_span_orientation_recovers_full_plate(self):
+        result = analyze_cccc(
+            CcccAnalysisInput(
+                long_span_in=72.0,
+                short_span_in=40.0,
+                plate_thickness_in=0.25,
+                stiffener_count=0,
+                elastic_modulus_ksi=29_000.0,
+                poisson_ratio=0.3,
+                yield_strength_ksi=36.0,
+                pressure_psf=50.0,
+                stiffener_orientation=StiffenerOrientation.SHORT_SPAN,
+            )
+        )
+        self.assertEqual(result.panel.spacing_in, 72.0)
+        self.assertEqual(result.panel.long_side_in, 72.0)
+        self.assertEqual(result.panel.short_side_in, 40.0)
+        self.assertEqual(result.panel.aspect_ratio, 1.8)
+
+    def test_unsymmetrical_section_warning_is_explicit(self):
+        common = CcccAnalysisInput(
+            long_span_in=72.0,
+            short_span_in=40.0,
+            plate_thickness_in=0.25,
+            stiffener_count=2,
+            elastic_modulus_ksi=29_000.0,
+            poisson_ratio=0.3,
+            yield_strength_ksi=36.0,
+            pressure_psf=100.0,
+            stiffener_orientation=StiffenerOrientation.LONG_SPAN,
+            stiffener=AngleSection(2.0, 2.5, 0.25),
+        )
+        angle_result = analyze_cccc(common)
+        flat_bar_result = analyze_cccc(
+            replace(common, stiffener=FlatBarSection(2.0, 0.25))
+        )
+        self.assertTrue(angle_result.warnings)
+        self.assertIn("product inertia", angle_result.warnings[0])
+        self.assertEqual(flat_bar_result.warnings, ())
 
 
 if __name__ == "__main__":

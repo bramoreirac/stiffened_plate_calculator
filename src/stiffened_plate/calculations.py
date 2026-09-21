@@ -26,13 +26,22 @@ class InputValidationError(ValueError):
     """Raised when an analysis input is outside the supported model domain."""
 
 
+def _is_finite_number(value: object) -> bool:
+    if isinstance(value, bool):
+        return False
+    try:
+        return isfinite(value)  # type: ignore[arg-type]
+    except (TypeError, ValueError):
+        return False
+
+
 def _require_finite_positive(name: str, value: float) -> None:
-    if isinstance(value, bool) or not isfinite(value) or value <= 0:
+    if not _is_finite_number(value) or value <= 0:
         raise InputValidationError(f"{name} must be a finite value greater than zero")
 
 
 def _require_finite_nonnegative(name: str, value: float) -> None:
-    if isinstance(value, bool) or not isfinite(value) or value < 0:
+    if not _is_finite_number(value) or value < 0:
         raise InputValidationError(f"{name} must be a finite value not less than zero")
 
 
@@ -61,8 +70,7 @@ def validate_cccc_input(data: CcccAnalysisInput) -> None:
 
     _require_finite_positive("elastic modulus", data.elastic_modulus_ksi)
     if (
-        isinstance(data.poisson_ratio, bool)
-        or not isfinite(data.poisson_ratio)
+        not _is_finite_number(data.poisson_ratio)
         or not -1.0 < data.poisson_ratio < 0.5
     ):
         raise InputValidationError("Poisson's ratio must be finite and between -1 and 0.5")
@@ -361,4 +369,3 @@ def analyze_cccc(data: CcccAnalysisInput) -> CcccAnalysisResult:
         ),
         warnings=tuple(warnings),
     )
-

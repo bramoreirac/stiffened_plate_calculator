@@ -60,3 +60,5 @@ Phase 1 extraction of the two CCCC spreadsheets is documented in [docs/PHASE_1_C
 Phase 2 produced the reusable section-property engine described in [docs/PHASE_2_SECTION_ENGINE.md](docs/PHASE_2_SECTION_ENGINE.md). It supports flat bars, angles, T-sections, RHS/SHS, channels, attachment orientation, and composite action with a tributary plate strip.
 
 Phase 3 produced the typed CCCC plate calculation engine described in [docs/PHASE_3_CALCULATION_ENGINE.md](docs/PHASE_3_CALCULATION_ENGINE.md). It supports both stiffener orientations, consumes every Phase 2 section family, validates inputs, preserves auditable intermediate values, and reproduces both CCCC workbook reference cases. Stability, connection, and combined-stress checks remain explicitly marked as not implemented.
+
+Phase 4 completed the automated verification program documented in [docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md). The suite verifies workbook regression values, individual equations, both orientation strategies, section-family integration, validation behavior, and exact pass/fail boundaries. All 42 tests pass with no unexplained spreadsheet differences.

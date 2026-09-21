@@ -11,7 +11,10 @@ from stiffened_plate.calculations import (  # noqa: E402
     InputValidationError,
     analyze_cccc,
 )
-from stiffened_plate.models import CcccAnalysisInput, StiffenerOrientation  # noqa: E402
+from stiffened_plate.models import (  # noqa: E402
+    CcccAnalysisInput,
+    StiffenerOrientation,
+)
 from stiffened_plate.sections import FlatBarSection  # noqa: E402
 
 
@@ -62,7 +65,45 @@ class InputValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(InputValidationError, "invalid stiffener section"):
             analyze_cccc(replace(self.valid, stiffener=FlatBarSection(0.0, 0.25)))
 
+    def test_non_numeric_values_raise_clear_input_errors(self):
+        invalid_changes = (
+            {"long_span_in": "72"},
+            {"plate_thickness_in": None},
+            {"poisson_ratio": "0.3"},
+            {"pressure_psf": object()},
+        )
+        for changes in invalid_changes:
+            with self.subTest(changes=changes), self.assertRaises(InputValidationError):
+                analyze_cccc(replace(self.valid, **changes))
+
+    def test_unsupported_runtime_identifiers_are_rejected(self):
+        invalid_changes = (
+            {"boundary_condition": "SSSS"},
+            {"calculation_model": "unreviewed_model"},
+            {"stiffener_orientation": "diagonal"},
+        )
+        for changes in invalid_changes:
+            with self.subTest(changes=changes), self.assertRaises(InputValidationError):
+                analyze_cccc(replace(self.valid, **changes))
+
+    def test_non_section_object_is_rejected(self):
+        with self.assertRaisesRegex(InputValidationError, "invalid stiffener section"):
+            analyze_cccc(replace(self.valid, stiffener=object()))
+
+    def test_zero_pressure_and_poisson_limits_inside_domain_are_allowed(self):
+        for poisson_ratio in (-0.999, 0.499):
+            with self.subTest(poisson_ratio=poisson_ratio):
+                result = analyze_cccc(
+                    replace(
+                        self.valid,
+                        pressure_psf=0.0,
+                        poisson_ratio=poisson_ratio,
+                    )
+                )
+                self.assertEqual(result.response.maximum_deflection_in, 0.0)
+                self.assertEqual(result.response.plate_stress_ksi, 0.0)
+                self.assertEqual(result.response.stiffener_stress_ksi, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
-

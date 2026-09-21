@@ -355,12 +355,22 @@ Deliverables:
 - `tests/test_validation.py`
 - `docs/PHASE_3_CALCULATION_ENGINE.md`
 
-### Phase 4 — Add automated verification
+### Phase 4 — Add automated verification — Complete
 
 - Encode the two workbook cases as regression tests.
 - Add coefficient, formula, validation, and boundary tests.
 - Resolve every unexplained difference from the spreadsheets.
 - Add independent section-property test cases for all five initial section families.
+
+Deliverables:
+
+- `tests/test_cccc_calculations.py`
+- `tests/test_coefficients.py`
+- `tests/test_formula_verification.py`
+- `tests/test_check_boundaries.py`
+- `tests/test_validation.py`
+- `tests/test_sections.py`
+- `docs/PHASE_4_VERIFICATION.md`
 
 ### Phase 5 — Build the interactive interface
 
