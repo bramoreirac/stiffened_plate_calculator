@@ -139,7 +139,7 @@ The section model should provide, as applicable:
 - Torsional constant and other stability properties when the relevant checks are implemented.
 - A clear definition of which face, leg, web, or wall is attached to the plate.
 
-Square hollow sections should not require a separate calculation engine; they are rectangular hollow sections with equal outside dimensions. Angle orientation and channel orientation must be explicit because mirroring or rotating an unsymmetrical section can change eccentricity and stability behavior.
+Square hollow sections should not require a separate calculation engine; they are rectangular hollow sections with equal outside dimensions. Angle handedness must be explicit. Channels use symmetric web-face or both-flange-end attachment configurations, so channel handedness is not required.
 
 ### Preserve intermediate results
 

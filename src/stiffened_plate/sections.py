@@ -51,7 +51,11 @@ class RhsAttachment(str, Enum):
 
 
 class ChannelAttachment(str, Enum):
-    """Channel face connected to the plate."""
+    """Symmetric channel attachment configuration.
+
+    ``FLANGE_FACE`` means both flange end faces connect to the plate.
+    ``WEB_FACE`` means the back of the web lies against the plate.
+    """
 
     FLANGE_FACE = "flange_face"
     WEB_FACE = "web_face"
@@ -450,14 +454,18 @@ class RectangularHollowSection:
 
 @dataclass(frozen=True, slots=True)
 class ChannelSection:
-    """A sharp-corner channel with flange-face or web-face attachment."""
+    """A sharp-corner channel in either symmetric attachment orientation.
+
+    ``WEB_FACE`` places the back of the web against the plate. ``FLANGE_FACE``
+    places both flange end faces against the plate, with the web at the far
+    edge. Channel handedness is therefore not required.
+    """
 
     overall_depth: float
     flange_width: float
     web_thickness: float
     flange_thickness: float
     attachment: ChannelAttachment = ChannelAttachment.FLANGE_FACE
-    handedness: Handedness = Handedness.RIGHT
 
     def geometry(self) -> SectionGeometry:
         _require_positive("channel overall depth", self.overall_depth)
@@ -470,33 +478,31 @@ class ChannelSection:
             raise ValueError("channel flange width must exceed web thickness")
 
         if self.attachment is ChannelAttachment.FLANGE_FACE:
+            clear_flange_height = self.flange_width - self.web_thickness
             components = (
                 Rectangle(
-                    width=self.flange_width,
-                    height=self.flange_thickness,
-                    x=-self.web_thickness / 2,
-                    label="attached_flange",
+                    width=self.flange_thickness,
+                    height=clear_flange_height,
+                    x=-self.overall_depth / 2,
+                    label="left_flange",
                 ),
                 Rectangle(
-                    width=self.web_thickness,
-                    height=self.overall_depth - 2 * self.flange_thickness,
-                    x=-self.web_thickness / 2,
-                    y=self.flange_thickness,
+                    width=self.flange_thickness,
+                    height=clear_flange_height,
+                    x=self.overall_depth / 2 - self.flange_thickness,
+                    label="right_flange",
+                ),
+                Rectangle(
+                    width=self.overall_depth,
+                    height=self.web_thickness,
+                    x=-self.overall_depth / 2,
+                    y=clear_flange_height,
                     label="web",
                 ),
-                Rectangle(
-                    width=self.flange_width,
-                    height=self.flange_thickness,
-                    x=-self.web_thickness / 2,
-                    y=self.overall_depth - self.flange_thickness,
-                    label="far_flange",
-                ),
             )
-            if self.handedness is Handedness.LEFT:
-                components = tuple(component.mirrored_x() for component in components)
         else:
-            # Rotated channel: the back of the web lies against the plate and
-            # the two flanges project from its longitudinal edges.
+            # The back of the web lies against the plate and both flanges
+            # project normally from its longitudinal edges.
             components = (
                 Rectangle(
                     width=self.overall_depth,
@@ -522,14 +528,17 @@ class ChannelSection:
 
         return SectionGeometry(
             shape="channel",
-            attachment=(
-                f"{self.attachment.value}_{self.handedness.value}"
-                if self.attachment is ChannelAttachment.FLANGE_FACE
-                else self.attachment.value
-            ),
+            attachment=self.attachment.value,
             components=components,
             properties=calculate_properties(components),
-            notes=("Sharp corners; rolled fillets are excluded.",),
+            notes=(
+                "Sharp corners; rolled fillets are excluded.",
+                (
+                    "Both flange end faces are attached to the plate."
+                    if self.attachment is ChannelAttachment.FLANGE_FACE
+                    else "The back of the web is attached to the plate."
+                ),
+            ),
         )
 
 

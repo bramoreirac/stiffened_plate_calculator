@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from math import isfinite
 
 from .models import StiffenerOrientation
+from .sections import CompositeSection, Rectangle, StiffenerSection
 
 
 @dataclass(frozen=True, slots=True)
@@ -25,6 +26,19 @@ class FrontViewGeometry:
     orientation: StiffenerOrientation
     spacing_in: float
     stiffeners: tuple[LineSegment, ...]
+
+
+@dataclass(frozen=True, slots=True)
+class SideViewGeometry:
+    plate_width_in: float
+    plate_thickness_in: float
+    shape: str | None
+    attachment: str | None
+    rectangles: tuple[Rectangle, ...]
+    stiffener_width_in: float
+    stiffener_depth_in: float
+    stiffener_x_min_in: float
+    stiffener_x_max_in: float
 
 
 def front_view_geometry(
@@ -241,6 +255,301 @@ def front_view_figure(
         },
         yaxis={
             "range": (-0.22 * width, 1.10 * width),
+            "visible": False,
+            "fixedrange": False,
+            "scaleanchor": "x",
+            "scaleratio": 1,
+        },
+    )
+    return figure
+
+
+def side_view_geometry(
+    plate_width_in: float,
+    plate_thickness_in: float,
+    stiffener: StiffenerSection | None,
+) -> SideViewGeometry:
+    """Return display geometry with the plate below the attachment surface.
+
+    The source section engine uses positive y from the plate top through the
+    plate and into the stiffener. The side view translates that geometry so the
+    plate/stiffener interface is y = 0, the plate occupies negative y, and the
+    stiffener projects upward in positive y.
+    """
+
+    for name, value in (
+        ("plate display width", plate_width_in),
+        ("plate thickness", plate_thickness_in),
+    ):
+        if isinstance(value, bool) or not isfinite(value) or value <= 0:
+            raise ValueError(f"{name} must be a finite value greater than zero")
+
+    if stiffener is None:
+        plate = Rectangle(
+            width=plate_width_in,
+            height=plate_thickness_in,
+            x=-plate_width_in / 2.0,
+            y=-plate_thickness_in,
+            label="effective_plate",
+        )
+        return SideViewGeometry(
+            plate_width_in=plate_width_in,
+            plate_thickness_in=plate_thickness_in,
+            shape=None,
+            attachment=None,
+            rectangles=(plate,),
+            stiffener_width_in=0.0,
+            stiffener_depth_in=0.0,
+            stiffener_x_min_in=0.0,
+            stiffener_x_max_in=0.0,
+        )
+
+    bare = stiffener.geometry()
+    composite = CompositeSection(
+        plate_width=plate_width_in,
+        plate_thickness=plate_thickness_in,
+        stiffener=stiffener,
+    ).geometry()
+    rectangles = tuple(
+        Rectangle(
+            width=component.width,
+            height=component.height,
+            x=component.x,
+            y=component.y - plate_thickness_in,
+            label=component.label,
+        )
+        for component in composite.components
+    )
+    return SideViewGeometry(
+        plate_width_in=plate_width_in,
+        plate_thickness_in=plate_thickness_in,
+        shape=bare.shape,
+        attachment=bare.attachment,
+        rectangles=rectangles,
+        stiffener_width_in=bare.properties.width,
+        stiffener_depth_in=bare.properties.depth,
+        stiffener_x_min_in=bare.properties.x_min,
+        stiffener_x_max_in=bare.properties.x_max,
+    )
+
+
+def _add_horizontal_dimension(
+    figure,
+    *,
+    x0: float,
+    x1: float,
+    y: float,
+    tick_size: float,
+    text: str,
+    text_shift: int,
+) -> None:
+    color = "#7c8798"
+    figure.add_shape(
+        type="line",
+        x0=x0,
+        y0=y,
+        x1=x1,
+        y1=y,
+        line={"color": color, "width": 1},
+    )
+    for x_position in (x0, x1):
+        figure.add_shape(
+            type="line",
+            x0=x_position,
+            y0=y - tick_size,
+            x1=x_position,
+            y1=y + tick_size,
+            line={"color": color, "width": 1},
+        )
+    figure.add_annotation(
+        x=(x0 + x1) / 2.0,
+        y=y,
+        text=text,
+        showarrow=False,
+        yshift=text_shift,
+        font={"family": "JetBrains Mono, monospace", "size": 11},
+    )
+
+
+def _add_vertical_dimension(
+    figure,
+    *,
+    x: float,
+    y0: float,
+    y1: float,
+    tick_size: float,
+    text: str,
+    text_shift: int,
+) -> None:
+    color = "#7c8798"
+    figure.add_shape(
+        type="line",
+        x0=x,
+        y0=y0,
+        x1=x,
+        y1=y1,
+        line={"color": color, "width": 1},
+    )
+    for y_position in (y0, y1):
+        figure.add_shape(
+            type="line",
+            x0=x - tick_size,
+            y0=y_position,
+            x1=x + tick_size,
+            y1=y_position,
+            line={"color": color, "width": 1},
+        )
+    figure.add_annotation(
+        x=x,
+        y=(y0 + y1) / 2.0,
+        text=text,
+        showarrow=False,
+        textangle=-90,
+        xshift=text_shift,
+        font={"family": "JetBrains Mono, monospace", "size": 11},
+    )
+
+
+def side_view_figure(
+    plate_width_in: float,
+    plate_thickness_in: float,
+    stiffener: StiffenerSection | None,
+):
+    """Build a Plotly cross-section view from the section engine rectangles."""
+
+    import plotly.graph_objects as go
+
+    geometry = side_view_geometry(
+        plate_width_in,
+        plate_thickness_in,
+        stiffener,
+    )
+    figure = go.Figure()
+    for component in geometry.rectangles:
+        is_plate = component.label == "effective_plate"
+        x0, x1 = component.x, component.x_max
+        y0, y1 = component.y, component.y_max
+        figure.add_trace(
+            go.Scatter(
+                x=(x0, x1, x1, x0, x0),
+                y=(y0, y0, y1, y1, y0),
+                mode="lines",
+                fill="toself",
+                fillcolor=(
+                    "rgba(124, 135, 152, 0.28)"
+                    if is_plate
+                    else "rgba(0, 166, 166, 0.32)"
+                ),
+                line={
+                    "color": "#7c8798" if is_plate else "#00a6a6",
+                    "width": 2,
+                },
+                text=(
+                    f"{'Plate' if is_plate else component.label.replace('_', ' ').title()}"
+                    f"<br>Width: {component.width:.4g} in"
+                    f"<br>Height: {component.height:.4g} in"
+                ),
+                hovertemplate="%{text}<extra></extra>",
+                name=component.label,
+            )
+        )
+
+    combined_x_min = min(component.x for component in geometry.rectangles)
+    combined_x_max = max(component.x_max for component in geometry.rectangles)
+    combined_y_min = min(component.y for component in geometry.rectangles)
+    combined_y_max = max(component.y_max for component in geometry.rectangles)
+    total_width = combined_x_max - combined_x_min
+    total_height = combined_y_max - combined_y_min
+    reference_size = max(total_width, total_height, 1.0)
+    horizontal_padding = 0.10 * reference_size
+    vertical_padding = 0.08 * reference_size
+
+    plate_dimension_y = -geometry.plate_thickness_in - vertical_padding
+    _add_horizontal_dimension(
+        figure,
+        x0=-geometry.plate_width_in / 2.0,
+        x1=geometry.plate_width_in / 2.0,
+        y=plate_dimension_y,
+        tick_size=0.015 * reference_size,
+        text=f"Displayed plate strip = {geometry.plate_width_in:.4g} in",
+        text_shift=-15,
+    )
+    _add_vertical_dimension(
+        figure,
+        x=combined_x_min - horizontal_padding,
+        y0=-geometry.plate_thickness_in,
+        y1=0.0,
+        tick_size=0.012 * reference_size,
+        text=f"Plate t = {geometry.plate_thickness_in:.4g} in",
+        text_shift=-19,
+    )
+
+    if geometry.shape is not None:
+        section_dimension_y = geometry.stiffener_depth_in + vertical_padding
+        _add_horizontal_dimension(
+            figure,
+            x0=geometry.stiffener_x_min_in,
+            x1=geometry.stiffener_x_max_in,
+            y=section_dimension_y,
+            tick_size=0.015 * reference_size,
+            text=f"Section width = {geometry.stiffener_width_in:.4g} in",
+            text_shift=14,
+        )
+        _add_vertical_dimension(
+            figure,
+            x=geometry.stiffener_x_max_in + horizontal_padding,
+            y0=0.0,
+            y1=geometry.stiffener_depth_in,
+            tick_size=0.012 * reference_size,
+            text=f"Section depth = {geometry.stiffener_depth_in:.4g} in",
+            text_shift=19,
+        )
+        figure.add_annotation(
+            x=(geometry.stiffener_x_min_in + geometry.stiffener_x_max_in) / 2.0,
+            y=geometry.stiffener_depth_in,
+            text=(
+                f"{geometry.shape.upper()} | "
+                f"{geometry.attachment.replace('_', ' ')} attachment"
+            ),
+            showarrow=False,
+            yshift=38,
+            font={"family": "JetBrains Mono, monospace", "size": 11},
+        )
+    else:
+        figure.add_annotation(
+            x=0.0,
+            y=0.0,
+            text="No stiffener",
+            showarrow=False,
+            yshift=22,
+            font={"family": "JetBrains Mono, monospace", "size": 11},
+        )
+
+    figure.update_layout(
+        template="plotly",
+        height=460,
+        margin={"l": 50, "r": 50, "t": 60, "b": 60},
+        showlegend=False,
+        hovermode="closest",
+        dragmode="pan",
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font={"family": "JetBrains Mono, monospace", "size": 11},
+        xaxis={
+            "range": (
+                combined_x_min - 2.2 * horizontal_padding,
+                combined_x_max + 2.2 * horizontal_padding,
+            ),
+            "visible": False,
+            "fixedrange": False,
+            "constrain": "domain",
+        },
+        yaxis={
+            "range": (
+                plate_dimension_y - 1.2 * vertical_padding,
+                max(combined_y_max, geometry.stiffener_depth_in)
+                + 2.2 * vertical_padding,
+            ),
             "visible": False,
             "fixedrange": False,
             "scaleanchor": "x",

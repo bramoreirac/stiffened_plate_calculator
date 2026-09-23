@@ -36,7 +36,7 @@ from stiffened_plate.sections import (
     TeeAttachment,
     TeeSection,
 )
-from stiffened_plate.visualization import front_view_figure
+from stiffened_plate.visualization import front_view_figure, side_view_figure
 
 
 st.set_page_config(
@@ -209,31 +209,23 @@ def _section_inputs(stiffener_count: int):
     )
     attachment = ChannelAttachment(
         st.selectbox(
-            "Face attached to plate",
+            "Channel attachment",
             (
                 ChannelAttachment.FLANGE_FACE.value,
                 ChannelAttachment.WEB_FACE.value,
             ),
-            format_func=lambda value: value.replace("_", " ").title(),
+            format_func=lambda value: {
+                ChannelAttachment.FLANGE_FACE.value: "Both flange end faces",
+                ChannelAttachment.WEB_FACE.value: "Back of web",
+            }[value],
         )
     )
-    handedness = Handedness.RIGHT
-    if attachment is ChannelAttachment.FLANGE_FACE:
-        handedness = Handedness(
-            st.selectbox(
-                "Projection side",
-                (Handedness.RIGHT.value, Handedness.LEFT.value),
-                format_func=lambda value: value.replace("_", " ").title(),
-                key="channel_handedness",
-            )
-        )
     return ChannelSection(
         overall_depth,
         flange_width,
         web_thickness,
         flange_thickness,
         attachment,
-        handedness,
     )
 
 
@@ -390,24 +382,42 @@ def _render_summary(result) -> None:
         ),
     )
 
-    st.subheader("Front view")
-    st.caption(
-        "Plan geometry is shown to scale; stiffeners are represented by centerlines."
-    )
-    st.plotly_chart(
-        front_view_figure(
-            result.inputs.long_span_in,
-            result.inputs.short_span_in,
-            result.inputs.stiffener_count,
-            result.inputs.stiffener_orientation,
-        ),
-        width="stretch",
-        config={
-            "displaylogo": False,
-            "scrollZoom": True,
-            "modeBarButtonsToRemove": ("select2d", "lasso2d"),
-        },
-    )
+    st.subheader("Geometry views")
+    chart_config = {
+        "displaylogo": False,
+        "scrollZoom": True,
+        "modeBarButtonsToRemove": ("select2d", "lasso2d"),
+    }
+    front_column, side_column = st.columns(2, gap="large")
+    with front_column:
+        st.markdown("**Front view**")
+        st.caption(
+            "Plate plan shown to scale; stiffeners are represented by centerlines."
+        )
+        st.plotly_chart(
+            front_view_figure(
+                result.inputs.long_span_in,
+                result.inputs.short_span_in,
+                result.inputs.stiffener_count,
+                result.inputs.stiffener_orientation,
+            ),
+            width="stretch",
+            config=chart_config,
+        )
+    with side_column:
+        st.markdown("**Side view**")
+        st.caption(
+            "One representative cross-section using the calculated attachment geometry."
+        )
+        st.plotly_chart(
+            side_view_figure(
+                result.panel.spacing_in,
+                result.inputs.plate_thickness_in,
+                result.inputs.stiffener if result.inputs.stiffener_count > 0 else None,
+            ),
+            width="stretch",
+            config=chart_config,
+        )
 
     st.subheader("Design checks")
     st.dataframe(check_rows(result), width="stretch", hide_index=True)

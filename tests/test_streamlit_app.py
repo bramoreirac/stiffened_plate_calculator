@@ -28,7 +28,7 @@ class StreamlitAppTests(unittest.TestCase):
         self.assertEqual(app.title[0].value, "Stiffened Plate Calculator")
         self.assertEqual(len(app.tabs), 3)
         self.assertGreaterEqual(len(app.dataframe), 1)
-        self.assertGreaterEqual(len(app.get("plotly_chart")), 1)
+        self.assertGreaterEqual(len(app.get("plotly_chart")), 2)
         self.assertTrue(any("implemented elastic checks pass" in box.value for box in app.success))
         self.assertIn(
             "NOT IMPLEMENTED", app.dataframe[0].value["Status"].tolist()
@@ -66,7 +66,7 @@ class StreamlitAppTests(unittest.TestCase):
         count.set_value(3)
         app.run(timeout=15)
         self.assertEqual(list(app.exception), [])
-        self.assertGreaterEqual(len(app.get("plotly_chart")), 1)
+        self.assertGreaterEqual(len(app.get("plotly_chart")), 2)
 
     def test_each_section_family_renders(self):
         families = ("Flat bar", "Angle", "T-section", "RHS / SHS", "Channel / U-section")

@@ -130,23 +130,24 @@ class RhsTests(SectionTestCase):
 
 
 class ChannelTests(SectionTestCase):
-    def test_flange_face_channel_and_handedness(self):
-        right = ChannelSection(
-            4.0, 2.5, 0.5, 0.5, ChannelAttachment.FLANGE_FACE, Handedness.RIGHT
-        ).geometry().properties
-        left = ChannelSection(
-            4.0, 2.5, 0.5, 0.5, ChannelAttachment.FLANGE_FACE, Handedness.LEFT
-        ).geometry().properties
+    def test_flange_face_channel_has_both_flange_ends_at_plate(self):
+        geometry = ChannelSection(
+            4.0, 2.5, 0.5, 0.5, ChannelAttachment.FLANGE_FACE
+        ).geometry()
+        props = geometry.properties
+        components = {component.label: component for component in geometry.components}
 
-        expected_area = 2 * 2.5 * 0.5 + 0.5 * 3.0
-        self.assertClose(right.area, expected_area)
-        self.assertClose(right.centroid_x, 0.625)
-        self.assertClose(right.centroid_y, 2.0)
-        self.assertClose(right.ix, 8.833333333333332)
-        self.assertClose(right.iy, 2.270833333333333)
-        self.assertClose(left.centroid_x, -right.centroid_x)
-        self.assertClose(left.ix, right.ix)
-        self.assertClose(left.iy, right.iy)
+        expected_area = 4.0 * 0.5 + 2 * 0.5 * 2.0
+        self.assertEqual(geometry.attachment, "flange_face")
+        self.assertEqual(components["left_flange"].y, 0.0)
+        self.assertEqual(components["right_flange"].y, 0.0)
+        self.assertEqual(components["web"].y, 2.0)
+        self.assertClose(props.area, expected_area)
+        self.assertClose(props.centroid_x, 0.0)
+        self.assertClose(props.centroid_y, 1.625)
+        self.assertClose(props.ix, 2.270833333333333)
+        self.assertClose(props.iy, 8.833333333333334)
+        self.assertClose(props.ixy, 0.0)
 
     def test_web_face_channel_is_symmetric(self):
         props = ChannelSection(
@@ -161,6 +162,17 @@ class ChannelTests(SectionTestCase):
         self.assertClose(props.ixy, 0.0)
         self.assertClose(props.width, 4.0)
         self.assertClose(props.depth, 2.5)
+
+    def test_channel_attachment_flip_preserves_centroidal_inertias(self):
+        flange_face = ChannelSection(
+            4.0, 2.5, 0.5, 0.5, ChannelAttachment.FLANGE_FACE
+        ).geometry().properties
+        web_face = ChannelSection(
+            4.0, 2.5, 0.5, 0.5, ChannelAttachment.WEB_FACE
+        ).geometry().properties
+        self.assertClose(flange_face.centroid_y + web_face.centroid_y, 2.5)
+        self.assertClose(flange_face.ix, web_face.ix)
+        self.assertClose(flange_face.iy, web_face.iy)
 
 
 class ValidationTests(unittest.TestCase):

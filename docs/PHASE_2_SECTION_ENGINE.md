@@ -93,10 +93,9 @@ Inputs:
 - Flange width.
 - Web thickness.
 - Flange thickness.
-- Attachment by one flange face or by the web face.
-- Left or right handedness for flange-face attachment.
+- Attachment by both flange end faces or by the back of the web.
 
-Flange-face attachment places one flange against the plate and leaves the channel projecting through its conventional depth. Web-face attachment rotates the channel so its web lies against the plate and both flanges project away from it.
+Flange-face attachment places both flange end faces against the plate, with the web connecting them at the far edge. Web-face attachment places the back of the web against the plate and both flanges project away from it. Both configurations are symmetric in the side view, so channel handedness is not required.
 
 ## 5. Composite section
 

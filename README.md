@@ -22,7 +22,7 @@ The first release will reproduce and consolidate the two existing `CCCC` spreads
 
 Planned future additions include bulb flats, hat sections, trapezoidal ribs, and custom built-up sections.
 
-Square and rectangular tubes share one calculation model. Angles and channels require explicit orientation and attachment definitions because they are not generally symmetric relative to the plate connection.
+Square and rectangular tubes share one calculation model. Angles require explicit handedness. Channels use symmetric web-face or both-flange-end attachment configurations and do not require handedness.
 
 ## Engineering scope and limitations
 
@@ -60,7 +60,7 @@ python -m pip install -e .
 python -m streamlit run app.py
 ```
 
-The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, an interactive front view of the plate and stiffener layout, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
+The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, interactive front and cross-section side views, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
 
 ## Project plan
 
@@ -76,4 +76,4 @@ Phase 3 produced the typed CCCC plate calculation engine described in [docs/PHAS
 
 Phase 4 completed the automated verification program documented in [docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md). The suite verifies workbook regression values, individual equations, both orientation strategies, section-family integration, validation behavior, and exact pass/fail boundaries. All 42 tests pass with no unexplained spreadsheet differences.
 
-Phase 5 produced the Streamlit application, presentation layer, and interactive front-view diagram documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 59 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, every section family, and live diagram updates.
+Phase 5 produced the Streamlit application, presentation layer, and interactive front- and side-view diagrams documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 65 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, every section family, and live diagram updates.
