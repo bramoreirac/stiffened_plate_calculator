@@ -60,7 +60,7 @@ python -m pip install -e .
 python -m streamlit run app.py
 ```
 
-The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
+The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, an interactive front view of the plate and stiffener layout, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
 
 ## Project plan
 
@@ -76,4 +76,4 @@ Phase 3 produced the typed CCCC plate calculation engine described in [docs/PHAS
 
 Phase 4 completed the automated verification program documented in [docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md). The suite verifies workbook regression values, individual equations, both orientation strategies, section-family integration, validation behavior, and exact pass/fail boundaries. All 42 tests pass with no unexplained spreadsheet differences.
 
-Phase 5 produced the Streamlit application and presentation layer documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 52 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, and every section family.
+Phase 5 produced the Streamlit application, presentation layer, and interactive front-view diagram documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 59 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, every section family, and live diagram updates.

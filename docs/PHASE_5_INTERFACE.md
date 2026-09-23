@@ -21,8 +21,8 @@ python -m streamlit run app.py
 Streamlit opens the calculator in the default browser. Stop the local server
 with `Ctrl+C` in the PowerShell window.
 
-The project currently requires Python 3.11 or newer and Streamlit 1.64 or a
-compatible later 1.x release, as declared in `pyproject.toml`.
+The project currently requires Python 3.11 or newer, Streamlit 1.64 or a
+compatible later 1.x release, and Plotly 6.x, as declared in `pyproject.toml`.
 
 ## Input workflow
 
@@ -64,6 +64,8 @@ runs the explicitly supported unstiffened case.
   as overall structural-code compliance.
 - Governing and allowable deflections.
 - Plate and stiffener elastic bending stresses.
+- An interactive front view showing the plate dimensions and equally spaced
+  stiffener centerlines in the selected orientation.
 - A table containing every check, status, demand, limit, unit, utilization,
   and note.
 - Individual visible messages for failed implemented checks.
@@ -109,7 +111,7 @@ engineering calculations.
 
 ## Interface verification
 
-The complete installed-environment suite contains 52 passing tests. Four use
+The complete installed-environment suite contains 59 passing tests. Five use
 Streamlit's native application test harness to verify:
 
 - The default calculator renders the summary, detail tabs, and incomplete
@@ -118,6 +120,12 @@ Streamlit's native application test harness to verify:
 - Zero stiffeners remove the section requirement and still render results.
 - Flat bar, angle, T-section, RHS/SHS, and channel selections all render and
   execute without application exceptions.
+- The front view renders and updates when the stiffener direction and count
+  change.
+
+Five visualization tests independently verify long-span and short-span line
+orientation, equal spacing, the zero-stiffener case, invalid inputs, plate
+dimensions, dimension annotations, and equal-axis scaling.
 
 Six additional presentation tests verify table contents, number formatting,
 the implemented-check summary predicate, the unstiffened result layout, and
@@ -140,10 +148,10 @@ where Streamlit has not been installed.
 - Imperial units only.
 - No standard section or plate catalog yet; dimensions are free-entry values.
 - No saved cases, comparison mode, optimization, or report export.
-- No plot or cross-section sketch in the first interface release.
+- The front view is implemented; the representative plate-and-stiffener side
+  cross-section remains a future interface enhancement.
 - No SSSS, CSCS, or grillage selector until their calculation models have been
   extracted and verified.
 
 These are interface limitations in addition to the engineering limitations
 documented in the Phase 3 and Phase 4 reports.
-

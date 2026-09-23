@@ -36,6 +36,7 @@ from stiffened_plate.sections import (
     TeeAttachment,
     TeeSection,
 )
+from stiffened_plate.visualization import front_view_figure
 
 
 st.set_page_config(
@@ -69,6 +70,45 @@ def _apply_interface_style() -> None:
         .stApp [data-testid="stDataFrame"] {
             font-family: "JetBrains Mono", "Cascadia Mono", Consolas,
                 "Liberation Mono", monospace !important;
+        }
+
+        .stApp p,
+        .stApp label,
+        .stApp input,
+        .stApp textarea,
+        .stApp button,
+        .stApp [data-baseweb="select"] {
+            font-size: 14px !important;
+        }
+
+        .stApp [data-testid="stDataFrame"] {
+            font-size: 13px !important;
+        }
+
+        .stApp [data-testid="stCaptionContainer"],
+        .stApp [data-testid="stCaptionContainer"] p,
+        .stApp small {
+            font-size: 12px !important;
+        }
+
+        .stApp h1 {
+            font-size: 2rem !important;
+        }
+
+        .stApp h2 {
+            font-size: 1.4rem !important;
+        }
+
+        .stApp h3 {
+            font-size: 1.15rem !important;
+        }
+
+        .stApp [data-testid="stMetricLabel"] {
+            font-size: 13px !important;
+        }
+
+        .stApp [data-testid="stMetricValue"] {
+            font-size: 1.65rem !important;
         }
 
         /* Square geometry throughout the application. */
@@ -348,6 +388,25 @@ def _render_summary(result) -> None:
             if result.inputs.stiffener_count > 0
             else "N/A"
         ),
+    )
+
+    st.subheader("Front view")
+    st.caption(
+        "Plan geometry is shown to scale; stiffeners are represented by centerlines."
+    )
+    st.plotly_chart(
+        front_view_figure(
+            result.inputs.long_span_in,
+            result.inputs.short_span_in,
+            result.inputs.stiffener_count,
+            result.inputs.stiffener_orientation,
+        ),
+        width="stretch",
+        config={
+            "displaylogo": False,
+            "scrollZoom": True,
+            "modeBarButtonsToRemove": ("select2d", "lasso2d"),
+        },
     )
 
     st.subheader("Design checks")

@@ -6,6 +6,7 @@ src/stiffened_plate/coefficients.py
 src/stiffened_plate/models.py
 src/stiffened_plate/presentation.py
 src/stiffened_plate/sections.py
+src/stiffened_plate/visualization.py
 src/stiffened_plate_calculator.egg-info/PKG-INFO
 src/stiffened_plate_calculator.egg-info/SOURCES.txt
 src/stiffened_plate_calculator.egg-info/dependency_links.txt
@@ -19,3 +20,4 @@ tests/test_presentation.py
 tests/test_sections.py
 tests/test_streamlit_app.py
 tests/test_validation.py
+tests/test_visualization.py

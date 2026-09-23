@@ -384,10 +384,12 @@ Deliverables:
 
 - `app.py`
 - `src/stiffened_plate/presentation.py`
+- `src/stiffened_plate/visualization.py`
 - `tests/test_presentation.py`
 - `tests/test_streamlit_app.py`
+- `tests/test_visualization.py`
 - `docs/PHASE_5_INTERFACE.md`
-- Streamlit dependency declaration in `pyproject.toml`
+- Streamlit and Plotly dependency declarations in `pyproject.toml`
 
 ### Phase 6 — Review the CCCC prototype
 

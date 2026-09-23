@@ -8,7 +8,7 @@ version = "0.1.0"
 description = "Interactive calculations for stiffened rectangular steel plates"
 readme = "README.md"
 requires-python = ">=3.11"
-dependencies = ["streamlit>=1.64,<2"]
+dependencies = ["streamlit>=1.64,<2", "plotly>=6,<7"]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -96,6 +96,9 @@ class PresentationTests(unittest.TestCase):
         source = (PROJECT_ROOT / "app.py").read_text(encoding="utf-8")
         self.assertIn('font-family: "JetBrains Mono"', source)
         self.assertIn("border-radius: 0 !important", source)
+        self.assertIn("font-size: 14px !important", source)
+        self.assertIn("font-size: 13px !important", source)
+        self.assertIn("font-size: 12px !important", source)
         self.assertIn("_apply_interface_style()", source)
 
 
