@@ -16,6 +16,65 @@ General conventions:
 - The section is shown as physically attached to the plate surface. It does not
   penetrate the plate.
 
+## Centroid and neutral-axis overlay
+
+The side view identifies the centroid of the **bare stiffener shape**. The
+plate strip is excluded from this marker so the symbol remains tied to the
+selected section geometry and does not move when the stiffener spacing changes.
+The section profile is translated horizontally so its calculated centroid lies
+on the representative placement line at `x = 0`; the profile is not distorted.
+
+Graphical convention:
+
+- `● C_s` marks the calculated bare-stiffener centroid. Its displayed location
+  is `(0, centroid_y)` after applying the horizontal placement translation
+  `-centroid_x` to the section profile.
+- A horizontal dash-dot line through `C_s` marks the centroidal `x-x` axis used
+  for the displayed bare-section `Ix` property.
+- A short vertical dotted locator through `C_s` makes horizontal eccentricity
+  visible. This is especially important for angles.
+- The centroid lines and `C_s` marker are yellow. The steel cross-section keeps
+  its existing teal color.
+
+### Symmetric-section example
+
+For a symmetric section such as a flat bar, the centroid and vertical locator
+coincide with the visible geometric centerline:
+
+```text
+                                  :
+                              +---:---+
+                              |   :   |
+                 - - - - - - - - ● C_s - - - - - -
+                              |   :   |
+                              |   :   |
+------------------------------+---:---+----------------  plate top
+=======================================================  plate
+```
+
+### Unsymmetrical angle example
+
+For an angle, the calculated centroid is offset from the outstanding leg. The
+marker can lie in the open region between the two legs, so it must not be
+placed automatically on the web profile or at the section bounding-box center:
+
+```text
+                       +----+
+                       |    |       :
+                       |    |       :
+              - - - - -|----|- - - ● C_s - - - - - -
+                       |    |       :
+                       |    +-------:----------+
+                       +------------:----------+  attached leg
+-----------------------+-----------------------+--------  plate top
+========================================================  plate
+```
+
+This initial overlay represents the gross bare-section centroid and its
+centroidal `x-x` axis. It does not represent the composite plate-stiffener
+neutral axis, the angle's principal axes, or its shear center. Those are
+different quantities and should use separate labels if added later.
+
 ## Flat bar
 
 The narrow edge of the flat bar is attached to the plate.
@@ -192,6 +251,19 @@ The interactive side view should:
 - Center the representative stiffener relative to the displayed plate strip
   while retaining any real section eccentricity.
 - Label the plate thickness and the principal section dimensions.
+- Mark the bare-stiffener centroid at `(0, centroid_y)` after aligning its
+  calculated `centroid_x` with the placement line, and draw its horizontal
+  centroidal `x-x` axis.
+- Include a vertical centroid locator so eccentric sections such as angles do
+  not appear to have their centroid on the web or at the bounding-box center.
+- Keep the bare-stiffener centroid distinct from the composite neutral axis,
+  principal axes, and shear center.
+- Align the bare-stiffener centroid with the representative plate-strip
+  centerline. For angles, translate the profile by `-centroid_x`; handedness
+  mirrors the translated profile about that line.
+- Set the displayed plate-strip width to the section width plus 4 in. This is
+  an illustrative width only and does not replace the calculated tributary
+  plate width used by the structural model.
 - Show the hollow region for RHS/SHS.
 - Continue to show invalid geometry as an input error rather than drawing a
   plausible-looking section.

@@ -26,14 +26,14 @@ class CheckBoundaryTests(unittest.TestCase):
             elastic_modulus_ksi=29_000.0,
             poisson_ratio=0.3,
             yield_strength_ksi=36.0,
-            pressure_psf=100.0,
+            uniform_force_lbf=2_000.0,
             deflection_limit_denominator=240.0,
             stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             stiffener=FlatBarSection(2.0, 0.25),
         )
 
     def test_zero_demand_checks_pass_with_zero_utilization(self):
-        result = analyze_cccc(replace(self.inputs, pressure_psf=0.0))
+        result = analyze_cccc(replace(self.inputs, uniform_force_lbf=0.0))
         for check in (
             result.checks.deflection,
             result.checks.plate_yield,
@@ -126,4 +126,3 @@ class CheckBoundaryTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

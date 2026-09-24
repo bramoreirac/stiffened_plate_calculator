@@ -18,6 +18,7 @@ from stiffened_plate.sections import (  # noqa: E402
     AngleSection,
     ChannelSection,
     FlatBarSection,
+    Handedness,
     RectangularHollowSection,
     TeeSection,
 )
@@ -51,7 +52,7 @@ class CcccCalculationTests(unittest.TestCase):
                         elastic_modulus_ksi=source["elastic_modulus_ksi"],
                         poisson_ratio=source["poisson_ratio"],
                         yield_strength_ksi=source["yield_strength_ksi"],
-                        pressure_psf=source["pressure_psf"],
+                        uniform_force_lbf=source["uniform_force_lbf"],
                         deflection_limit_denominator=source[
                             "deflection_limit_denominator"
                         ],
@@ -69,6 +70,7 @@ class CcccCalculationTests(unittest.TestCase):
 
                 actual_values = {
                     "elastic_modulus_psi": result.elastic_modulus_psi,
+                    "plate_area_in2": result.plate_area_in2,
                     "pressure_psi": result.pressure_psi,
                     "overall_aspect_ratio": result.overall_coefficients.aspect_ratio,
                     "panel_spacing_in": result.panel.spacing_in,
@@ -157,7 +159,7 @@ class CcccCalculationTests(unittest.TestCase):
                 elastic_modulus_ksi=29_000.0,
                 poisson_ratio=0.3,
                 yield_strength_ksi=36.0,
-                pressure_psf=50.0,
+                uniform_force_lbf=1_000.0,
                 stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             )
         )
@@ -193,7 +195,7 @@ class CcccCalculationTests(unittest.TestCase):
                         elastic_modulus_ksi=29_000.0,
                         poisson_ratio=0.3,
                         yield_strength_ksi=36.0,
-                        pressure_psf=100.0,
+                        uniform_force_lbf=2_000.0,
                         stiffener_orientation=StiffenerOrientation.LONG_SPAN,
                         stiffener=section,
                     )
@@ -215,7 +217,7 @@ class CcccCalculationTests(unittest.TestCase):
                 elastic_modulus_ksi=29_000.0,
                 poisson_ratio=0.3,
                 yield_strength_ksi=36.0,
-                pressure_psf=50.0,
+                uniform_force_lbf=1_000.0,
                 stiffener_orientation=StiffenerOrientation.SHORT_SPAN,
             )
         )
@@ -233,7 +235,7 @@ class CcccCalculationTests(unittest.TestCase):
             elastic_modulus_ksi=29_000.0,
             poisson_ratio=0.3,
             yield_strength_ksi=36.0,
-            pressure_psf=100.0,
+            uniform_force_lbf=2_000.0,
             stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             stiffener=AngleSection(2.0, 2.5, 0.25),
         )
@@ -244,6 +246,46 @@ class CcccCalculationTests(unittest.TestCase):
         self.assertTrue(angle_result.warnings)
         self.assertIn("product inertia", angle_result.warnings[0])
         self.assertEqual(flat_bar_result.warnings, ())
+
+    def test_angle_handedness_matches_centroid_alignment_and_response(self):
+        common = CcccAnalysisInput(
+            long_span_in=72.0,
+            short_span_in=40.0,
+            plate_thickness_in=0.25,
+            stiffener_count=2,
+            elastic_modulus_ksi=29_000.0,
+            poisson_ratio=0.3,
+            yield_strength_ksi=36.0,
+            uniform_force_lbf=2_000.0,
+            stiffener_orientation=StiffenerOrientation.LONG_SPAN,
+            stiffener=AngleSection(2.0, 2.5, 0.25, Handedness.RIGHT),
+        )
+        right = analyze_cccc(common)
+        left = analyze_cccc(
+            replace(
+                common,
+                stiffener=AngleSection(2.0, 2.5, 0.25, Handedness.LEFT),
+            )
+        )
+        assert right.composite_section is not None
+        assert left.composite_section is not None
+
+        self.assertClose(right.composite_section.centroid_x_in, 0.0)
+        self.assertClose(left.composite_section.centroid_x_in, 0.0)
+        self.assertClose(
+            right.composite_section.product_inertia_in4,
+            -left.composite_section.product_inertia_in4,
+        )
+        self.assertClose(
+            right.response.stiffener_deflection_in,
+            left.response.stiffener_deflection_in,
+        )
+        self.assertClose(
+            right.response.stiffener_stress_ksi,
+            left.response.stiffener_stress_ksi,
+        )
+        self.assertTrue(right.warnings)
+        self.assertTrue(left.warnings)
 
 
 if __name__ == "__main__":

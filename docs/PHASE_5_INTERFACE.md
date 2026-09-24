@@ -41,7 +41,8 @@ Inputs are arranged in expandable sidebar groups and recalculate immediately:
    - Elastic modulus.
    - Poisson's ratio.
    - Yield strength.
-   - Uniform pressure.
+   - Total uniformly distributed force in lbf. Uniform pressure is calculated
+     from the full plate area.
    - Deflection-limit denominator.
 
 The supported section choices are:
@@ -65,10 +66,11 @@ runs the explicitly supported unstiffened case.
 - Governing and allowable deflections.
 - Plate and stiffener elastic bending stresses.
 - An interactive front view showing the plate dimensions and equally spaced
-  stiffener centerlines in the selected orientation.
+  yellow stiffener-centroid placement lines in the selected orientation.
 - An interactive side view showing the plate and one representative stiffener
   using the selected shape, dimensions, attachment, rotation, and angle
-  handedness.
+  handedness. Yellow centroid lines and a `C_s` marker identify the calculated
+  bare-section centroid while the steel profile remains teal.
 - A table containing every check, status, demand, limit, unit, utilization,
   and note.
 - Individual visible messages for failed implemented checks.
@@ -114,24 +116,25 @@ engineering calculations.
 
 ## Interface verification
 
-The complete installed-environment suite contains 65 passing tests. Five use
+The complete installed-environment suite contains 70 passing tests. Five use
 Streamlit's native application test harness to verify:
 
 - The default calculator renders the summary, detail tabs, and incomplete
   limit states.
-- A large pressure change produces a visible failed-check result.
+- A large total-force change produces a visible failed-check result.
 - Zero stiffeners remove the section requirement and still render results.
 - Flat bar, angle, T-section, RHS/SHS, and channel selections all render and
   execute without application exceptions.
 - Both geometry views render, and the front view updates when the stiffener
   direction and count change.
 
-Ten visualization tests independently verify front-view orientation and equal
+Twelve visualization tests independently verify front-view orientation and equal
 spacing; every cross-section scenario in `cross_section_sample.md`; plate and
-stiffener attachment geometry; channel attachment semantics; the
-zero-stiffener cases; dimensions; annotations; and equal-axis scaling.
+stiffener attachment geometry; channel attachment semantics; the illustrative
+plate-strip width; centroid alignment and color; zero-stiffener cases;
+dimensions; annotations; and equal-axis scaling.
 
-Six additional presentation tests verify table contents, number formatting,
+Seven additional presentation tests verify table contents, number formatting,
 the implemented-check summary predicate, the unstiffened result layout, and
 the application entry point.
 

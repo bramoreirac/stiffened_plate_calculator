@@ -2,7 +2,8 @@
 
 ## Status
 
-Phase 4 is complete. The automated suite contains 42 passing tests and no
+Phase 4 is complete. The calculation, section, and validation suite contains
+46 passing tests and no
 known unexplained differences from the two source CCCC spreadsheets.
 
 This phase verifies the software translation and its internal numerical
@@ -16,17 +17,18 @@ suitable for every structural design case.
 | Spreadsheet regression | Every stored numeric intermediate and final value from both CCCC golden cases | Pass |
 | Spreadsheet checks | Deflection, plate yield, and stiffener yield Boolean results | Pass |
 | Coefficients | Every table knot, every interval midpoint, lower and upper clamps, invalid ratios | Pass |
-| Units and rigidity | Modulus and pressure conversions; plate-flexural-rigidity equation | Pass |
+| Units and rigidity | Modulus conversion; full plate area; force-to-pressure conversion; plate-flexural-rigidity equation | Pass |
 | Orientation geometry | Long-span, short-span, dimension-swapping, and zero-stiffener cases | Pass |
 | Composite properties | Independent area, centroid, parallel-axis inertia, extreme fibre, and section modulus | Pass |
 | Load sharing | Plate and stiffener spring constants, load fractions, effective pressure, tributary load | Pass |
 | Response | Plate and stiffener deflections, moments, stresses, governing deflection, allowable deflection | Pass |
-| Scaling | Linear response under doubled pressure | Pass |
+| Scaling | Linear response under doubled total force | Pass |
 | Check boundaries | Zero demand, equality acceptance, just-over-limit failure, utilization, and units | Pass |
 | Incomplete limit states | Stability, connection, and combined stress cannot report a false pass | Pass |
 | Input validation | Scalar domains, nonnumeric values, count rules, invalid sections, and unsupported identifiers | Pass |
 | Section families | Flat bar, angle, T, RHS/SHS, and channel properties and analysis integration | Pass |
 | Unsymmetrical sections | Nonzero product inertia produces an explicit coupled-bending warning | Pass |
+| Centroid placement | Angle handedness mirrors the profile while the bare centroid remains aligned with the plate-strip reference | Pass |
 
 ## Workbook regression acceptance
 
@@ -39,8 +41,9 @@ The tests compare every value stored in each case using relative tolerance
 `1e-10` and absolute tolerance `1e-12`. Pass/fail states and identifiers are
 compared exactly. Calculations use unrounded values.
 
-No formula correction was introduced to force agreement. The engine continues
-to identify the calculation method as `spreadsheet_parity_v1`.
+The workbook pressure inputs are converted to equivalent total forces so the
+pressure and all downstream workbook results remain unchanged. The engine
+identifies this revised input method as `total_force_v2`.
 
 ## Formula-level independence
 
@@ -48,6 +51,7 @@ Formula tests construct expected results directly from the Phase 1 equations,
 rather than reading the engine's internal variables. These checks separately
 recalculate:
 
+- Full plate area and total-force-to-pressure conversion.
 - Plate rigidity.
 - Orientation-specific panel dimensions.
 - Composite centroid and inertia by the parallel-axis theorem.
@@ -67,7 +71,7 @@ The implemented checks use unrounded values and the inclusive rule
 
 - Equality is `PASS`.
 - A demand just above the limit is `FAIL`.
-- Zero pressure produces zero utilization and `PASS` for implemented checks.
+- Zero force produces zero utilization and `PASS` for implemented checks.
 - Demand, limit, utilization, and units correspond to the returned response.
 - Unimplemented checks have no fabricated demand, limit, or utilization.
 
@@ -118,4 +122,3 @@ The CCCC computational core is sufficiently regression-tested for the Phase 5
 interactive interface. The interface should call this engine directly and
 must not duplicate its equations or suppress its assumptions, warnings, or
 unimplemented-check states.
-

@@ -83,6 +83,19 @@ class AngleTests(SectionTestCase):
         self.assertClose(left.iy, right.iy)
         self.assertClose(left.ixy, -right.ixy)
 
+    def test_composite_angle_is_aligned_on_bare_stiffener_centroid(self):
+        right_section = AngleSection(3.0, 4.0, 0.5, Handedness.RIGHT)
+        left_section = AngleSection(3.0, 4.0, 0.5, Handedness.LEFT)
+        right = CompositeSection(12.0, 0.25, right_section).geometry().properties
+        left = CompositeSection(12.0, 0.25, left_section).geometry().properties
+
+        self.assertClose(right.centroid_x, 0.0)
+        self.assertClose(left.centroid_x, 0.0)
+        self.assertClose(right.centroid_y, left.centroid_y)
+        self.assertClose(right.ix, left.ix)
+        self.assertClose(right.iy, left.iy)
+        self.assertClose(right.ixy, -left.ixy)
+
 
 class TeeTests(SectionTestCase):
     def test_tee_properties_and_attachment_flip(self):

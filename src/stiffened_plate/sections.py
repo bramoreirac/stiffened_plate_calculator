@@ -544,7 +544,7 @@ class ChannelSection:
 
 @dataclass(frozen=True, slots=True)
 class CompositeSection:
-    """A stiffener acting compositely with a centered tributary plate strip."""
+    """A stiffener acting compositely with a centroid-aligned plate strip."""
 
     plate_width: float
     plate_thickness: float
@@ -562,7 +562,10 @@ class CompositeSection:
             label="effective_plate",
         )
         shifted_stiffener = tuple(
-            component.translated(dy=self.plate_thickness)
+            component.translated(
+                dx=-stiffener_geometry.properties.centroid_x,
+                dy=self.plate_thickness,
+            )
             for component in stiffener_geometry.components
         )
         components = (plate, *shifted_stiffener)
@@ -574,6 +577,7 @@ class CompositeSection:
             notes=(
                 "Full composite action is assumed.",
                 "The effective plate width equals the supplied tributary width.",
+                "The bare-stiffener centroid is aligned with the plate-strip centerline.",
                 *stiffener_geometry.notes,
             ),
         )

@@ -34,12 +34,12 @@ class StreamlitAppTests(unittest.TestCase):
             "NOT IMPLEMENTED", app.dataframe[0].value["Status"].tolist()
         )
 
-    def test_pressure_change_produces_a_visible_failure(self):
+    def test_force_change_produces_a_visible_failure(self):
         app = self.run_app()
-        pressure = self.widget_by_label(
-            app.number_input, "Uniform pressure, q (psf)"
+        uniform_force = self.widget_by_label(
+            app.number_input, "Uniformly distributed force, F (lbf)"
         )
-        pressure.set_value(1_000_000.0)
+        uniform_force.set_value(1_000_000.0)
         app.run(timeout=15)
         self.assertEqual(list(app.exception), [])
         self.assertTrue(any("implemented checks fail" in box.value for box in app.error))

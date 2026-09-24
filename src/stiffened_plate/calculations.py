@@ -50,8 +50,8 @@ def validate_cccc_input(data: CcccAnalysisInput) -> None:
 
     if data.boundary_condition is not BoundaryCondition.CCCC:
         raise InputValidationError("only the CCCC boundary condition is implemented")
-    if data.calculation_model is not CalculationModel.SPREADSHEET_PARITY_V1:
-        raise InputValidationError("only spreadsheet_parity_v1 is implemented")
+    if data.calculation_model is not CalculationModel.TOTAL_FORCE_V2:
+        raise InputValidationError("only total_force_v2 is implemented")
     if not isinstance(data.stiffener_orientation, StiffenerOrientation):
         raise InputValidationError("stiffener orientation is not supported")
 
@@ -75,7 +75,7 @@ def validate_cccc_input(data: CcccAnalysisInput) -> None:
     ):
         raise InputValidationError("Poisson's ratio must be finite and between -1 and 0.5")
     _require_finite_positive("yield strength", data.yield_strength_ksi)
-    _require_finite_nonnegative("pressure", data.pressure_psf)
+    _require_finite_nonnegative("uniform force", data.uniform_force_lbf)
     _require_finite_positive(
         "deflection-limit denominator", data.deflection_limit_denominator
     )
@@ -135,16 +135,18 @@ def _pending_check(name: str, *, applicable: bool, note: str) -> CheckResult:
 
 
 def analyze_cccc(data: CcccAnalysisInput) -> CcccAnalysisResult:
-    """Analyze a CCCC plate using the versioned spreadsheet-parity model.
+    """Analyze a CCCC plate from a total uniformly distributed force.
 
-    This deliberately retains the source workbooks' load-sharing and response
-    assumptions. See the returned assumptions and the Phase 1 specification.
+    Pressure is the entered total force divided by the full plate area. The
+    downstream load-sharing and response equations retain the source
+    workbooks' assumptions. See the returned assumptions and specifications.
     """
 
     validate_cccc_input(data)
 
     elastic_modulus_psi = data.elastic_modulus_ksi * 1000.0
-    pressure_psi = data.pressure_psf / 144.0
+    plate_area_in2 = data.long_span_in * data.short_span_in
+    pressure_psi = data.uniform_force_lbf / plate_area_in2
     plate_rigidity = (
         elastic_modulus_psi
         * data.plate_thickness_in**3
@@ -340,6 +342,7 @@ def analyze_cccc(data: CcccAnalysisInput) -> CcccAnalysisResult:
     return CcccAnalysisResult(
         inputs=data,
         elastic_modulus_psi=elastic_modulus_psi,
+        plate_area_in2=plate_area_in2,
         pressure_psi=pressure_psi,
         plate_rigidity_lbf_in=plate_rigidity,
         overall_coefficients=overall,
@@ -358,14 +361,15 @@ def analyze_cccc(data: CcccAnalysisInput) -> CcccAnalysisResult:
         checks=checks,
         assumptions=(
             "All four plate edges and all calculated subpanel edges are clamped.",
+            "The entered total force is distributed uniformly over the full plate "
+            "area; pressure equals force divided by area.",
             "The effective plate width equals the full stiffener spacing.",
             "The plate pressure is reduced by spring load sharing; the stiffener "
             "response uses the full tributary pressure.",
             "The tributary pressure resultant is treated as a fixed-fixed "
             "center point load using the spreadsheet constants 192 and 8.",
             "Governing deflection is the larger, not the sum, of plate-panel and "
-            "stiffener deflections.",
-            "Material and response behavior are elastic.",
+            "stiffener deflections; material and response behavior are elastic.",
         ),
         warnings=tuple(warnings),
     )

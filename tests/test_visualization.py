@@ -9,10 +9,12 @@ sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
 from stiffened_plate.models import StiffenerOrientation  # noqa: E402
 from stiffened_plate.visualization import (  # noqa: E402
+    CENTROID_LINE_COLOR,
     front_view_figure,
     front_view_geometry,
     side_view_figure,
     side_view_geometry,
+    side_view_plate_strip_width,
 )
 from stiffened_plate.sections import (  # noqa: E402
     AngleSection,
@@ -24,6 +26,7 @@ from stiffened_plate.sections import (  # noqa: E402
     RhsAttachment,
     TeeAttachment,
     TeeSection,
+    calculate_properties,
 )
 
 
@@ -71,6 +74,11 @@ class FrontViewGeometryTests(unittest.TestCase):
 
 
 class SideViewGeometryTests(unittest.TestCase):
+    def test_displayed_plate_strip_is_section_width_plus_four_inches(self):
+        section = RectangularHollowSection(2.0, 3.0, 0.25)
+        self.assertEqual(side_view_plate_strip_width(section), 6.0)
+        self.assertEqual(side_view_plate_strip_width(None), 4.0)
+
     def test_flat_bar_uses_plate_interface_as_zero_elevation(self):
         geometry = side_view_geometry(12.0, 0.25, FlatBarSection(2.0, 0.5))
         components = {component.label: component for component in geometry.rectangles}
@@ -80,6 +88,48 @@ class SideViewGeometryTests(unittest.TestCase):
         self.assertEqual(components["flat_bar"].y_max, 2.0)
         self.assertEqual(geometry.stiffener_width_in, 0.5)
         self.assertEqual(geometry.stiffener_depth_in, 2.0)
+        self.assertEqual(geometry.stiffener_centroid_x_in, 0.0)
+        self.assertEqual(geometry.stiffener_centroid_y_in, 1.0)
+
+    def test_angle_profile_is_centered_on_its_calculated_centroid(self):
+        right_section = AngleSection(2.0, 2.5, 0.25, Handedness.RIGHT)
+        left_section = AngleSection(2.0, 2.5, 0.25, Handedness.LEFT)
+        right = side_view_geometry(6.0, 0.25, right_section)
+        left = side_view_geometry(6.0, 0.25, left_section)
+
+        for geometry, section in ((right, right_section), (left, left_section)):
+            displayed_stiffener = tuple(
+                component
+                for component in geometry.rectangles
+                if component.label != "effective_plate"
+            )
+            displayed_properties = calculate_properties(displayed_stiffener)
+            bare_properties = section.geometry().properties
+            self.assertAlmostEqual(displayed_properties.centroid_x, 0.0)
+            self.assertAlmostEqual(
+                displayed_properties.centroid_y,
+                bare_properties.centroid_y,
+            )
+            self.assertEqual(geometry.stiffener_centroid_x_in, 0.0)
+            self.assertAlmostEqual(
+                geometry.stiffener_centroid_y_in,
+                bare_properties.centroid_y,
+            )
+
+        right_components = {
+            component.label: component
+            for component in right.rectangles
+            if component.label != "effective_plate"
+        }
+        left_components = {
+            component.label: component
+            for component in left.rectangles
+            if component.label != "effective_plate"
+        }
+        for label, right_component in right_components.items():
+            left_component = left_components[label]
+            self.assertAlmostEqual(left_component.x, -right_component.x_max)
+            self.assertEqual(left_component.y, right_component.y)
 
     def test_every_documented_section_scenario_projects_above_plate(self):
         sections = (
@@ -146,7 +196,8 @@ class FrontViewFigureTests(unittest.TestCase):
         )
         self.assertEqual(len(figure.data), 2)
         self.assertEqual(figure.data[0].name, "Plate boundary")
-        self.assertEqual(figure.data[1].name, "Stiffener centerlines")
+        self.assertEqual(figure.data[1].name, "Stiffener centroid lines")
+        self.assertEqual(figure.data[1].line.color, CENTROID_LINE_COLOR)
         annotations = " ".join(annotation.text for annotation in figure.layout.annotations)
         self.assertIn("Long span a = 72 in", annotations)
         self.assertIn("Short span b = 40 in", annotations)
@@ -163,6 +214,16 @@ class FrontViewFigureTests(unittest.TestCase):
         self.assertIn("Plate t = 0.25 in", annotations)
         self.assertIn("Section width = 2 in", annotations)
         self.assertIn("Section depth = 3 in", annotations)
+        self.assertIn("C<sub>s</sub>", annotations)
+        centroid_shapes = tuple(
+            shape
+            for shape in figure.layout.shapes
+            if shape.line.color == CENTROID_LINE_COLOR
+        )
+        self.assertEqual(len(centroid_shapes), 3)
+        self.assertEqual(figure.layout.title.text, "RHS | side a attachment")
+        self.assertEqual(figure.layout.title.x, 0.5)
+        self.assertEqual(figure.layout.title.xanchor, "center")
         self.assertEqual(figure.layout.yaxis.scaleanchor, "x")
         self.assertEqual(figure.layout.yaxis.scaleratio, 1)
 

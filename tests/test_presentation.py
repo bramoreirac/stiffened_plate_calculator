@@ -29,7 +29,7 @@ class PresentationTests(unittest.TestCase):
             elastic_modulus_ksi=29_000.0,
             poisson_ratio=0.3,
             yield_strength_ksi=36.0,
-            pressure_psf=100.0,
+            uniform_force_lbf=2_000.0,
             stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             stiffener=FlatBarSection(2.0, 0.25),
         )
@@ -72,6 +72,8 @@ class PresentationTests(unittest.TestCase):
         )
         quantities = {row["Quantity"] for rows in groups.values() for row in rows}
         self.assertIn("Plate rigidity D", quantities)
+        self.assertIn("Total uniform force", quantities)
+        self.assertIn("Full plate area", quantities)
         self.assertIn("Composite Ix", quantities)
         self.assertIn("Governing deflection", quantities)
 
@@ -83,7 +85,9 @@ class PresentationTests(unittest.TestCase):
 
     def test_summary_predicate_detects_failed_implemented_check(self):
         self.assertTrue(implemented_checks_pass(analyze_cccc(self.inputs)))
-        failed = analyze_cccc(replace(self.inputs, pressure_psf=1_000_000.0))
+        failed = analyze_cccc(
+            replace(self.inputs, uniform_force_lbf=1_000_000.0)
+        )
         self.assertFalse(implemented_checks_pass(failed))
 
     def test_streamlit_entrypoint_is_valid_python(self):
@@ -95,6 +99,7 @@ class PresentationTests(unittest.TestCase):
     def test_streamlit_style_uses_jetbrains_mono_and_square_corners(self):
         source = (PROJECT_ROOT / "app.py").read_text(encoding="utf-8")
         self.assertIn('font-family: "JetBrains Mono"', source)
+        self.assertIn('.calculation-assumptions li', source)
         self.assertIn("border-radius: 0 !important", source)
         self.assertIn("font-size: 14px !important", source)
         self.assertIn("font-size: 13px !important", source)

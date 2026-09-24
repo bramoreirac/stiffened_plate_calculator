@@ -87,6 +87,8 @@ def intermediate_groups(
     groups: dict[str, list[dict[str, str]]] = {
         "Conversions and plate properties": [
             _row("Elastic modulus", result.elastic_modulus_psi, "psi"),
+            _row("Total uniform force", result.inputs.uniform_force_lbf, "lbf"),
+            _row("Full plate area", result.plate_area_in2, "in^2"),
             _row("Uniform pressure", result.pressure_psi, "psi"),
             _row("Plate rigidity D", result.plate_rigidity_lbf_in, "lbf·in"),
         ],
@@ -188,4 +190,3 @@ def intermediate_groups(
         ]
 
     return groups
-

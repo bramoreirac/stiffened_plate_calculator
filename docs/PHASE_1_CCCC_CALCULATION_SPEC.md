@@ -58,6 +58,13 @@ D = E t^3 / (12 (1 - nu^2))                         [lbf in]
 
 `a` is assumed to be the long span and `b` the short span. The spreadsheet does not enforce `a >= b`.
 
+This section records the source workbooks exactly: their editable load is a
+pressure in psf. The application model was subsequently revised to accept a
+total uniformly distributed force in lbf and calculate
+`q_psi = F_lbf / (a_in * b_in)`. Regression cases convert each workbook
+pressure to its equivalent total force so downstream results remain
+comparable.
+
 ## 5. CCCC coefficient interpolation
 
 The coefficient table is identical in both workbooks.

@@ -2,7 +2,7 @@
 
 ## 1. Project purpose
 
-Develop an interactive Python application for evaluating rectangular stiffened plates under uniform pressure. The application will reproduce the engineering calculations currently implemented in the Excel workbooks while providing a single, consistent interface for selecting plate geometry, stiffener arrangement, material properties, loading, and support conditions.
+Develop an interactive Python application for evaluating rectangular stiffened plates under a total force distributed uniformly over the plate area. The application will reproduce the engineering calculations currently implemented in the Excel workbooks while providing a single, consistent interface for selecting plate geometry, stiffener arrangement, material properties, loading, and support conditions.
 
 The first working version will support plates with all four edges clamped (`CCCC`). The design must allow additional support conditions, including `SSSS` and `CSCS`, to be added without rebuilding the application or duplicating the common calculation logic.
 
@@ -28,7 +28,7 @@ The first working version will support plates with all four edges clamped (`CCCC
   - Elastic modulus.
   - Poisson's ratio.
   - Yield strength.
-  - Uniform pressure.
+  - Total uniformly distributed force; pressure is calculated from full plate area.
 - Automatic calculation of:
   - Panel dimensions and aspect ratios.
   - Plate rigidity.
@@ -166,7 +166,7 @@ A structured input object should contain:
 - Elastic modulus.
 - Poisson's ratio.
 - Yield strength.
-- Uniform pressure.
+- Total uniformly distributed force.
 - Deflection-limit denominator, initially 240.
 
 ### Calculation results
@@ -255,7 +255,8 @@ Suggested sections:
    - Shape-specific dimensions.
    - Section orientation and attached face where required.
 4. **Material and loading**
-   - Elastic modulus, Poisson's ratio, yield strength, and pressure.
+- Elastic modulus, Poisson's ratio, yield strength, and total uniformly
+  distributed force.
 5. **Results**
    - Governing deflection.
    - Plate stress.

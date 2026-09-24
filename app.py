@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from html import escape
 import sys
 from pathlib import Path
 
@@ -36,7 +37,11 @@ from stiffened_plate.sections import (
     TeeAttachment,
     TeeSection,
 )
-from stiffened_plate.visualization import front_view_figure, side_view_figure
+from stiffened_plate.visualization import (
+    front_view_figure,
+    side_view_figure,
+    side_view_plate_strip_width,
+)
 
 
 st.set_page_config(
@@ -83,6 +88,13 @@ def _apply_interface_style() -> None:
 
         .stApp [data-testid="stDataFrame"] {
             font-size: 13px !important;
+        }
+
+        .stApp .calculation-assumptions,
+        .stApp .calculation-assumptions li {
+            font-family: "JetBrains Mono", "Cascadia Mono", Consolas,
+                "Liberation Mono", monospace !important;
+            font-size: 14px !important;
         }
 
         .stApp [data-testid="stCaptionContainer"],
@@ -312,15 +324,16 @@ def _collect_inputs() -> CcccAnalysisInput:
                 format="%.3f",
             )
         )
-        pressure = float(
+        uniform_force = float(
             st.number_input(
-                "Uniform pressure, q (psf)",
+                "Uniformly distributed force, F (lbf)",
                 min_value=0.0,
-                value=100.0,
-                step=10.0,
+                value=2_000.0,
+                step=100.0,
                 format="%.3f",
             )
         )
+        st.caption("Uniform pressure is calculated as F / (a x b).")
         deflection_denominator = float(
             st.number_input(
                 "Deflection limit denominator, L /",
@@ -342,7 +355,7 @@ def _collect_inputs() -> CcccAnalysisInput:
         elastic_modulus_ksi=elastic_modulus,
         poisson_ratio=poisson_ratio,
         yield_strength_ksi=yield_strength,
-        pressure_psf=pressure,
+        uniform_force_lbf=uniform_force,
         deflection_limit_denominator=deflection_denominator,
         stiffener_orientation=orientation,
         stiffener=stiffener,
@@ -392,7 +405,8 @@ def _render_summary(result) -> None:
     with front_column:
         st.markdown("**Front view**")
         st.caption(
-            "Plate plan shown to scale; stiffeners are represented by centerlines."
+            "Plate plan shown to scale; stiffeners are represented by yellow "
+            "centroidal placement lines."
         )
         st.plotly_chart(
             front_view_figure(
@@ -407,13 +421,17 @@ def _render_summary(result) -> None:
     with side_column:
         st.markdown("**Side view**")
         st.caption(
-            "One representative cross-section using the calculated attachment geometry."
+            "One representative cross-section; the displayed plate strip is the "
+            "section width plus 4 in. Yellow lines locate the bare-section centroid."
+        )
+        side_view_stiffener = (
+            result.inputs.stiffener if result.inputs.stiffener_count > 0 else None
         )
         st.plotly_chart(
             side_view_figure(
-                result.panel.spacing_in,
+                side_view_plate_strip_width(side_view_stiffener),
                 result.inputs.plate_thickness_in,
-                result.inputs.stiffener if result.inputs.stiffener_count > 0 else None,
+                side_view_stiffener,
             ),
             width="stretch",
             config=chart_config,
@@ -446,8 +464,13 @@ def _render_assumptions(result) -> None:
             st.warning(warning)
 
     st.subheader("Calculation assumptions")
-    for assumption in result.assumptions:
-        st.markdown(f"- {assumption}")
+    assumption_items = "".join(
+        f"<li>{escape(assumption)}</li>" for assumption in result.assumptions
+    )
+    st.markdown(
+        f'<ul class="calculation-assumptions">{assumption_items}</ul>',
+        unsafe_allow_html=True,
+    )
 
     st.subheader("Checks outside the current model")
     st.warning(
@@ -457,7 +480,7 @@ def _render_assumptions(result) -> None:
     )
     st.markdown(
         "The current calculation reproduces the source spreadsheets under the "
-        "versioned `spreadsheet_parity_v1` model. It requires engineering review "
+        "versioned `total_force_v2` model. It requires engineering review "
         "before use for final structural design."
     )
 

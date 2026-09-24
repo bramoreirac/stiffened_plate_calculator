@@ -1,6 +1,6 @@
 # Stiffened Plate Calculator
 
-An interactive Python application for evaluating rectangular steel plates with one-way stiffeners under uniform pressure.
+An interactive Python application for evaluating rectangular steel plates with one-way stiffeners under a total force distributed uniformly over the plate area.
 
 The first release will reproduce and consolidate the two existing `CCCC` spreadsheets for plates with all four edges clamped. The architecture will allow `SSSS`, `CSCS`, and other analysis scenarios to be added later without duplicating the common calculation logic.
 
@@ -8,7 +8,7 @@ The first release will reproduce and consolidate the two existing `CCCC` spreads
 
 - Boundary condition: `CCCC`.
 - Stiffener direction: long span or short span.
-- Loading: uniform pressure.
+- Loading: total uniformly distributed force in lbf; pressure is calculated as force divided by full plate area.
 - Units: imperial initially.
 - Outputs: intermediate values, elastic deflections, bending stresses, utilization ratios, and clearly identified design checks.
 
@@ -60,7 +60,7 @@ python -m pip install -e .
 python -m streamlit run app.py
 ```
 
-The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, interactive front and cross-section side views, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
+The browser interface updates automatically as inputs change. It includes all five initial stiffener families, both CCCC stiffener orientations, interactive front and cross-section side views with yellow centroid references, implemented-check utilization, detailed intermediate values, assumptions, and explicit unimplemented-check statuses.
 
 ## Project plan
 
@@ -74,6 +74,6 @@ Phase 2 produced the reusable section-property engine described in [docs/PHASE_2
 
 Phase 3 produced the typed CCCC plate calculation engine described in [docs/PHASE_3_CALCULATION_ENGINE.md](docs/PHASE_3_CALCULATION_ENGINE.md). It supports both stiffener orientations, consumes every Phase 2 section family, validates inputs, preserves auditable intermediate values, and reproduces both CCCC workbook reference cases. Stability, connection, and combined-stress checks remain explicitly marked as not implemented.
 
-Phase 4 completed the automated verification program documented in [docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md). The suite verifies workbook regression values, individual equations, both orientation strategies, section-family integration, validation behavior, and exact pass/fail boundaries. All 42 tests pass with no unexplained spreadsheet differences.
+Phase 4 completed the automated verification program documented in [docs/PHASE_4_VERIFICATION.md](docs/PHASE_4_VERIFICATION.md). The suite verifies workbook regression values, individual equations, both orientation strategies, section-family integration, validation behavior, and exact pass/fail boundaries. All 46 calculation, section, and validation tests pass with no unexplained spreadsheet differences.
 
-Phase 5 produced the Streamlit application, presentation layer, and interactive front- and side-view diagrams documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 65 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, every section family, and live diagram updates.
+Phase 5 produced the Streamlit application, presentation layer, and interactive front- and side-view diagrams documented in [docs/PHASE_5_INTERFACE.md](docs/PHASE_5_INTERFACE.md). The complete installed-environment suite now contains 70 passing tests, including native Streamlit interaction tests for input changes, failed results, zero stiffeners, every section family, centroid alignment, force-to-pressure conversion, and live diagram updates.

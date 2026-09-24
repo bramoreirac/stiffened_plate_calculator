@@ -22,7 +22,7 @@ class FormulaVerificationTests(unittest.TestCase):
             elastic_modulus_ksi=30_000.0,
             poisson_ratio=0.25,
             yield_strength_ksi=50.0,
-            pressure_psf=288.0,
+            uniform_force_lbf=3_600.0,
             deflection_limit_denominator=300.0,
             stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             stiffener=FlatBarSection(height=2.0, thickness=0.5),
@@ -38,11 +38,24 @@ class FormulaVerificationTests(unittest.TestCase):
     def test_unit_conversions_and_plate_rigidity(self):
         result = analyze_cccc(self.inputs)
         expected_e = 30_000.0 * 1000.0
-        expected_q = 288.0 / 144.0
+        expected_area = 60.0 * 30.0
+        expected_q = 3_600.0 / expected_area
         expected_d = expected_e * 0.5**3 / (12.0 * (1.0 - 0.25**2))
         self.assertEqual(result.elastic_modulus_psi, expected_e)
+        self.assertEqual(result.plate_area_in2, expected_area)
         self.assertEqual(result.pressure_psi, expected_q)
         self.assertClose(result.plate_rigidity_lbf_in, expected_d)
+
+    def test_pressure_varies_with_total_force_and_full_plate_area(self):
+        base = analyze_cccc(self.inputs)
+        doubled_force = analyze_cccc(
+            replace(self.inputs, uniform_force_lbf=7_200.0)
+        )
+        doubled_area = analyze_cccc(replace(self.inputs, long_span_in=120.0))
+
+        self.assertClose(doubled_force.pressure_psi, 2.0 * base.pressure_psi)
+        self.assertClose(doubled_area.plate_area_in2, 2.0 * base.plate_area_in2)
+        self.assertClose(doubled_area.pressure_psi, 0.5 * base.pressure_psi)
 
     def test_long_span_panel_geometry(self):
         result = analyze_cccc(self.inputs)
@@ -197,9 +210,9 @@ class FormulaVerificationTests(unittest.TestCase):
             self.inputs.short_span_in / self.inputs.deflection_limit_denominator,
         )
 
-    def test_response_is_linear_with_pressure(self):
+    def test_response_is_linear_with_total_force(self):
         base = analyze_cccc(self.inputs)
-        doubled = analyze_cccc(replace(self.inputs, pressure_psf=576.0))
+        doubled = analyze_cccc(replace(self.inputs, uniform_force_lbf=7_200.0))
         for base_value, doubled_value in (
             (base.response.plate_deflection_in, doubled.response.plate_deflection_in),
             (
@@ -217,4 +230,3 @@ class FormulaVerificationTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

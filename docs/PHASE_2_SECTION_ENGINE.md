@@ -20,7 +20,11 @@ The implementation is in `src/stiffened_plate/sections.py`. Automated tests are 
 - A bare stiffener's attachment plane is `y = 0`.
 - In a composite section, the plate top is `y = 0` and the plate bottom is `y = plate_thickness`.
 - The stiffener geometry is translated so its attachment plane coincides with the plate bottom.
-- The effective plate strip is centered on the stiffener reference line at `x = 0`.
+- The effective plate strip is centered on the bare-stiffener centroidal
+  placement line at `x = 0`.
+- Before composite assembly, stiffener components are translated horizontally
+  by `-centroid_x`. This is zero for symmetric shapes and aligns an
+  unsymmetrical angle's calculated centroid with the plate-strip centerline.
 
 This convention matches the vertical datum used by the CCCC workbooks: composite centroid is measured from the plate top surface.
 
@@ -143,7 +147,8 @@ The automated suite verifies:
 
 - Basic rectangular flat-bar properties.
 - Composite flat-bar properties against both CCCC workbook golden cases.
-- Angle area, centroid, `Ix`, `Iy`, `Ixy`, and mirroring.
+- Angle area, centroid, `Ix`, `Iy`, `Ixy`, handedness mirroring, and composite
+  alignment on the bare-stiffener centroid.
 - T-section area, centroid, inertias, and attachment reversal.
 - RHS properties using an independent outer-rectangle-minus-inner-rectangle solution.
 - RHS 90-degree rotation and SHS identification.

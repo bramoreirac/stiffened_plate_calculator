@@ -28,7 +28,7 @@ class InputValidationTests(unittest.TestCase):
             elastic_modulus_ksi=29_000.0,
             poisson_ratio=0.3,
             yield_strength_ksi=36.0,
-            pressure_psf=100.0,
+            uniform_force_lbf=2_000.0,
             stiffener_orientation=StiffenerOrientation.LONG_SPAN,
             stiffener=FlatBarSection(2.0, 0.25),
         )
@@ -40,7 +40,7 @@ class InputValidationTests(unittest.TestCase):
             {"plate_thickness_in": 0.0},
             {"elastic_modulus_ksi": float("nan")},
             {"yield_strength_ksi": 0.0},
-            {"pressure_psf": -0.01},
+            {"uniform_force_lbf": -0.01},
             {"poisson_ratio": 0.5},
             {"poisson_ratio": -1.0},
             {"deflection_limit_denominator": 0.0},
@@ -70,7 +70,7 @@ class InputValidationTests(unittest.TestCase):
             {"long_span_in": "72"},
             {"plate_thickness_in": None},
             {"poisson_ratio": "0.3"},
-            {"pressure_psf": object()},
+            {"uniform_force_lbf": object()},
         )
         for changes in invalid_changes:
             with self.subTest(changes=changes), self.assertRaises(InputValidationError):
@@ -90,13 +90,13 @@ class InputValidationTests(unittest.TestCase):
         with self.assertRaisesRegex(InputValidationError, "invalid stiffener section"):
             analyze_cccc(replace(self.valid, stiffener=object()))
 
-    def test_zero_pressure_and_poisson_limits_inside_domain_are_allowed(self):
+    def test_zero_force_and_poisson_limits_inside_domain_are_allowed(self):
         for poisson_ratio in (-0.999, 0.499):
             with self.subTest(poisson_ratio=poisson_ratio):
                 result = analyze_cccc(
                     replace(
                         self.valid,
-                        pressure_psf=0.0,
+                        uniform_force_lbf=0.0,
                         poisson_ratio=poisson_ratio,
                     )
                 )

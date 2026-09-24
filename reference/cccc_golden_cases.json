@@ -1,10 +1,11 @@
 {
   "metadata": {
-    "purpose": "Golden regression values extracted from the two CCCC Excel workbooks",
+    "purpose": "Golden workbook results reproduced with equivalent total uniformly distributed force inputs",
     "units": "Imperial",
     "relative_tolerance": 1e-10,
     "absolute_tolerance": 1e-12,
-    "calculation_model": "spreadsheet_parity_v1"
+    "calculation_model": "total_force_v2",
+    "source_load_note": "Each workbook pressure input was multiplied by the full plate area to obtain the equivalent total force."
   },
   "coefficient_table": [
     {"aspect_ratio": 1.0, "beta_w": 0.0138, "beta_m": 0.0513},
@@ -34,11 +35,12 @@
         "elastic_modulus_ksi": 29000.0,
         "poisson_ratio": 0.3,
         "yield_strength_ksi": 36.0,
-        "pressure_psf": 100.0,
+        "uniform_force_lbf": 2000.0,
         "deflection_limit_denominator": 240.0
       },
       "expected": {
         "elastic_modulus_psi": 29000000.0,
+        "plate_area_in2": 2880.0,
         "pressure_psi": 0.6944444444444444,
         "overall_aspect_ratio": 1.8,
         "panel_spacing_in": 13.333333333333334,
@@ -94,11 +96,12 @@
         "elastic_modulus_ksi": 29000.0,
         "poisson_ratio": 0.3,
         "yield_strength_ksi": 36.0,
-        "pressure_psf": 1300.0,
+        "uniform_force_lbf": 8717.165798611111,
         "deflection_limit_denominator": 240.0
       },
       "expected": {
         "elastic_modulus_psi": 29000000.0,
+        "plate_area_in2": 965.59375,
         "pressure_psi": 9.027777777777779,
         "overall_aspect_ratio": 5.5,
         "panel_spacing_in": 24.291666666666668,

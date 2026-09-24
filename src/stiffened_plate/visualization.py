@@ -9,6 +9,9 @@ from .models import StiffenerOrientation
 from .sections import CompositeSection, Rectangle, StiffenerSection
 
 
+CENTROID_LINE_COLOR = "#f2c94c"
+
+
 @dataclass(frozen=True, slots=True)
 class LineSegment:
     x0: float
@@ -39,6 +42,28 @@ class SideViewGeometry:
     stiffener_depth_in: float
     stiffener_x_min_in: float
     stiffener_x_max_in: float
+    stiffener_centroid_x_in: float
+    stiffener_centroid_y_in: float
+
+
+def side_view_plate_strip_width(
+    stiffener: StiffenerSection | None,
+    extra_width_in: float = 4.0,
+) -> float:
+    """Return the illustrative plate width used in the side-view diagram."""
+
+    if (
+        isinstance(extra_width_in, bool)
+        or not isfinite(extra_width_in)
+        or extra_width_in <= 0
+    ):
+        raise ValueError(
+            "side-view extra plate width must be finite and greater than zero"
+        )
+    section_width = (
+        0.0 if stiffener is None else stiffener.geometry().properties.width
+    )
+    return section_width + extra_width_in
 
 
 def front_view_geometry(
@@ -157,9 +182,9 @@ def front_view_figure(
                 y=y_values,
                 text=hover_values,
                 mode="lines",
-                line={"color": "#00a6a6", "width": 2.5},
+                line={"color": CENTROID_LINE_COLOR, "width": 2.5, "dash": "dashdot"},
                 hovertemplate="%{text}<extra></extra>",
-                name="Stiffener centerlines",
+                name="Stiffener centroid lines",
             )
         )
 
@@ -302,6 +327,8 @@ def side_view_geometry(
             stiffener_depth_in=0.0,
             stiffener_x_min_in=0.0,
             stiffener_x_max_in=0.0,
+            stiffener_centroid_x_in=0.0,
+            stiffener_centroid_y_in=0.0,
         )
 
     bare = stiffener.geometry()
@@ -328,8 +355,10 @@ def side_view_geometry(
         rectangles=rectangles,
         stiffener_width_in=bare.properties.width,
         stiffener_depth_in=bare.properties.depth,
-        stiffener_x_min_in=bare.properties.x_min,
-        stiffener_x_max_in=bare.properties.x_max,
+        stiffener_x_min_in=bare.properties.x_min - bare.properties.centroid_x,
+        stiffener_x_max_in=bare.properties.x_max - bare.properties.centroid_x,
+        stiffener_centroid_x_in=0.0,
+        stiffener_centroid_y_in=bare.properties.centroid_y,
     )
 
 
@@ -484,7 +513,12 @@ def side_view_figure(
         text_shift=-19,
     )
 
+    chart_title = "No stiffener"
     if geometry.shape is not None:
+        chart_title = (
+            f"{geometry.shape.upper()} | "
+            f"{geometry.attachment.replace('_', ' ')} attachment"
+        )
         section_dimension_y = geometry.stiffener_depth_in + vertical_padding
         _add_horizontal_dimension(
             figure,
@@ -504,31 +538,61 @@ def side_view_figure(
             text=f"Section depth = {geometry.stiffener_depth_in:.4g} in",
             text_shift=19,
         )
-        figure.add_annotation(
-            x=(geometry.stiffener_x_min_in + geometry.stiffener_x_max_in) / 2.0,
-            y=geometry.stiffener_depth_in,
-            text=(
-                f"{geometry.shape.upper()} | "
-                f"{geometry.attachment.replace('_', ' ')} attachment"
-            ),
-            showarrow=False,
-            yshift=38,
-            font={"family": "JetBrains Mono, monospace", "size": 11},
+        centroid_extension = 0.06 * reference_size
+        figure.add_shape(
+            type="line",
+            x0=geometry.stiffener_x_min_in - centroid_extension,
+            y0=geometry.stiffener_centroid_y_in,
+            x1=geometry.stiffener_x_max_in + centroid_extension,
+            y1=geometry.stiffener_centroid_y_in,
+            line={"color": CENTROID_LINE_COLOR, "width": 2, "dash": "dashdot"},
+            layer="above",
         )
-    else:
+        figure.add_shape(
+            type="line",
+            x0=geometry.stiffener_centroid_x_in,
+            y0=0.0,
+            x1=geometry.stiffener_centroid_x_in,
+            y1=geometry.stiffener_depth_in,
+            line={"color": CENTROID_LINE_COLOR, "width": 2, "dash": "dashdot"},
+            layer="above",
+        )
+        centroid_radius = 0.012 * reference_size
+        figure.add_shape(
+            type="circle",
+            x0=geometry.stiffener_centroid_x_in - centroid_radius,
+            y0=geometry.stiffener_centroid_y_in - centroid_radius,
+            x1=geometry.stiffener_centroid_x_in + centroid_radius,
+            y1=geometry.stiffener_centroid_y_in + centroid_radius,
+            line={"color": CENTROID_LINE_COLOR, "width": 1},
+            fillcolor=CENTROID_LINE_COLOR,
+            layer="above",
+        )
         figure.add_annotation(
-            x=0.0,
-            y=0.0,
-            text="No stiffener",
+            x=geometry.stiffener_centroid_x_in,
+            y=geometry.stiffener_centroid_y_in,
+            text="C<sub>s</sub>",
             showarrow=False,
-            yshift=22,
-            font={"family": "JetBrains Mono, monospace", "size": 11},
+            xshift=18,
+            font={
+                "family": "JetBrains Mono, monospace",
+                "size": 11,
+                "color": CENTROID_LINE_COLOR,
+            },
         )
 
     figure.update_layout(
         template="plotly",
         height=460,
-        margin={"l": 50, "r": 50, "t": 60, "b": 60},
+        margin={"l": 50, "r": 50, "t": 75, "b": 60},
+        title={
+            "text": chart_title,
+            "x": 0.5,
+            "xanchor": "center",
+            "y": 0.98,
+            "yanchor": "top",
+            "font": {"family": "JetBrains Mono, monospace", "size": 12},
+        },
         showlegend=False,
         hovermode="closest",
         dragmode="pan",

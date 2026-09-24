@@ -27,6 +27,7 @@ class CalculationModel(str, Enum):
     """Versioned engineering calculation methods."""
 
     SPREADSHEET_PARITY_V1 = "spreadsheet_parity_v1"
+    TOTAL_FORCE_V2 = "total_force_v2"
 
 
 class CheckStatus(str, Enum):
@@ -38,10 +39,11 @@ class CheckStatus(str, Enum):
 
 @dataclass(frozen=True, slots=True)
 class CcccAnalysisInput:
-    """Imperial-unit inputs for the CCCC spreadsheet-parity model.
+    """Imperial-unit inputs for the CCCC total-force model.
 
-    Lengths are inches, material stresses are ksi, and pressure is psf.
-    A stiffener section is required when ``stiffener_count`` is positive.
+    Lengths are inches, material stresses are ksi, and ``uniform_force_lbf``
+    is the total force distributed uniformly over the full plate area. A
+    stiffener section is required when ``stiffener_count`` is positive.
     """
 
     long_span_in: float
@@ -51,12 +53,12 @@ class CcccAnalysisInput:
     elastic_modulus_ksi: float
     poisson_ratio: float
     yield_strength_ksi: float
-    pressure_psf: float
+    uniform_force_lbf: float
     stiffener_orientation: StiffenerOrientation
     stiffener: StiffenerSection | None = None
     deflection_limit_denominator: float = 240.0
     boundary_condition: BoundaryCondition = BoundaryCondition.CCCC
-    calculation_model: CalculationModel = CalculationModel.SPREADSHEET_PARITY_V1
+    calculation_model: CalculationModel = CalculationModel.TOTAL_FORCE_V2
 
 
 @dataclass(frozen=True, slots=True)
@@ -141,10 +143,11 @@ class AnalysisChecks:
 
 @dataclass(frozen=True, slots=True)
 class CcccAnalysisResult:
-    """Auditable output from the CCCC spreadsheet-parity calculation."""
+    """Auditable output from the CCCC total-force calculation."""
 
     inputs: CcccAnalysisInput
     elastic_modulus_psi: float
+    plate_area_in2: float
     pressure_psi: float
     plate_rigidity_lbf_in: float
     overall_coefficients: PlateCoefficients
@@ -156,4 +159,3 @@ class CcccAnalysisResult:
     checks: AnalysisChecks
     assumptions: tuple[str, ...]
     warnings: tuple[str, ...]
-

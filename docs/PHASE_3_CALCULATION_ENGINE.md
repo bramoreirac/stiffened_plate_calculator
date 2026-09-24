@@ -3,11 +3,13 @@
 ## Status
 
 Phase 3 is complete. The Python engine implements the versioned
-`spreadsheet_parity_v1` calculation for plates with all four edges clamped
-(`CCCC`) and stiffeners running along either the long or short plate span.
+`total_force_v2` calculation for plates with all four edges clamped (`CCCC`)
+and stiffeners running along either the long or short plate span.
 
-The engine reproduces the documented spreadsheet method. Numerical parity
-does not independently validate that method for design use.
+The engine retains the documented spreadsheet response method after converting
+the entered total uniformly distributed force to pressure over the full plate
+area. Numerical parity does not independently validate that method for design
+use.
 
 ## Implementation
 
@@ -42,7 +44,7 @@ result = analyze_cccc(
         elastic_modulus_ksi=29_000.0,
         poisson_ratio=0.3,
         yield_strength_ksi=36.0,
-        pressure_psf=100.0,
+        uniform_force_lbf=2_000.0,
         stiffener_orientation=StiffenerOrientation.LONG_SPAN,
         stiffener=FlatBarSection(height=2.0, thickness=0.25),
     )
@@ -52,14 +54,21 @@ print(result.response.maximum_deflection_in)
 print(result.checks.deflection.status)
 ```
 
-All input dimensions use inches, material stresses use ksi, and uniform
-pressure uses psf. Returned property and response field names include units.
+All input dimensions use inches, material stresses use ksi, and the total
+uniformly distributed force uses lbf. The engine calculates pressure in psi:
+
+```text
+plate_area_in2 = long_span_in * short_span_in
+pressure_psi = uniform_force_lbf / plate_area_in2
+```
+
+Returned property and response field names include units.
 
 ## Result organization
 
 `CcccAnalysisResult` retains:
 
-- Converted modulus and pressure.
+- Converted modulus, full plate area, total force, and calculated pressure.
 - Overall and panel CCCC coefficients.
 - Stiffener span, spacing, and panel dimensions.
 - Plate rigidity.
@@ -95,15 +104,17 @@ The engine rejects:
 - Negative, fractional, or Boolean stiffener counts.
 - A positive stiffener count without a valid section.
 - Poisson's ratios outside `-1 < nu < 0.5`.
-- Negative pressure.
+- Negative total force.
 - Unsupported boundary conditions, orientations, or calculation models.
 - Invalid section geometry reported by the Phase 2 section engine.
 
 ## Spreadsheet parity and tests
 
-Both Phase 1 golden cases are automated tests. Every stored numeric
-intermediate and final result, plus all three spreadsheet Boolean checks, is
-compared using the tolerance in `reference/cccc_golden_cases.json`.
+Both Phase 1 golden cases are automated tests. Each workbook pressure input is
+first converted to an equivalent total force by multiplying it by the full
+plate area. Every stored numeric intermediate and final result, plus all three
+spreadsheet Boolean checks, is then compared using the tolerance in
+`reference/cccc_golden_cases.json`.
 
 Tests also cover every coefficient knot, every interpolation interval, both
 coefficient clamps, invalid ratios, the unstiffened case, input failures, and
@@ -131,16 +142,15 @@ The engine retains the Phase 1 review items, including:
 - Plate and stiffener stresses are checked separately.
 - Only the bottom composite extreme fibre is used for stiffener bending stress.
 
-Any revised formulation must be a new calculation model rather than a silent
-change to `spreadsheet_parity_v1`.
+The total-force input is implemented as `total_force_v2`, rather than silently
+changing the meaning of the former `spreadsheet_parity_v1` pressure input.
 
 ## Current limitations
 
-- Imperial units and nonnegative uniform pressure only.
+- Imperial units and nonnegative total uniformly distributed force only.
 - CCCC plates with one equally spaced set of parallel stiffeners only.
 - Elastic response and gross sharp-corner section properties.
 - No stability, effective-width, weld, connection, plasticity, fatigue,
   corrosion, or code-resistance checks.
 - Unsymmetrical sections use composite `Ix`; a nonzero product inertia produces
   a warning because coupled unsymmetrical bending is not evaluated.
-
