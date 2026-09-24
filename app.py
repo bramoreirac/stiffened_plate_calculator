@@ -490,7 +490,8 @@ def main() -> None:
     st.title("Stiffened Plate Calculator")
     st.caption(
         "CCCC rectangular steel plates with one set of equally spaced stiffeners "
-        "under uniform pressure"
+        "under a total uniformly distributed force; pressure is calculated as "
+        "force divided by full plate area"
     )
     st.warning(
         "Preliminary elastic calculation only — this tool does not yet perform a "

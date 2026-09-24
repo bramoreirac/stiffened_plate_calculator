@@ -94,8 +94,14 @@ def intermediate_groups(
         ],
         "Panel geometry and CCCC coefficients": [
             _row("Overall aspect ratio", overall.aspect_ratio),
-            _row("Overall deflection coefficient βw", overall.beta_w),
-            _row("Overall moment coefficient βm", overall.beta_m),
+            _row(
+                "Overall deflection coefficient βw (informational only)",
+                overall.beta_w,
+            ),
+            _row(
+                "Overall moment coefficient βm (informational only)",
+                overall.beta_m,
+            ),
             _row("Stiffener span", panel.stiffener_span_in, "in"),
             _row("Stiffener spacing / tributary width", panel.spacing_in, "in"),
             _row("Panel long side", panel.long_side_in, "in"),

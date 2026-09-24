@@ -26,6 +26,13 @@ class StreamlitAppTests(unittest.TestCase):
     def test_default_app_renders_summary_details_and_limit_states(self):
         app = self.run_app()
         self.assertEqual(app.title[0].value, "Stiffened Plate Calculator")
+        self.assertTrue(
+            any(
+                "total uniformly distributed force" in caption.value
+                and "force divided by full plate area" in caption.value
+                for caption in app.caption
+            )
+        )
         self.assertEqual(len(app.tabs), 3)
         self.assertGreaterEqual(len(app.dataframe), 1)
         self.assertGreaterEqual(len(app.get("plotly_chart")), 2)

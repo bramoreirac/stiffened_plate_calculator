@@ -392,13 +392,19 @@ Deliverables:
 - `docs/PHASE_5_INTERFACE.md`
 - Streamlit and Plotly dependency declarations in `pyproject.toml`
 
-### Phase 6 — Review the CCCC prototype
+### Phase 6 — Review the CCCC prototype — Complete
 
 - Compare the application and workbooks side by side.
 - Review usability, terminology, units, precision, and warnings.
 - Record any agreed corrections to the spreadsheet methodology.
 - Establish the CCCC version as the baseline for expansion.
 - Confirm that results cannot be mistaken for a complete code-compliance assessment when stability or connection checks remain outside scope.
+
+Deliverables:
+
+- `docs/PHASE_6_CCCC_REVIEW.md`
+- `tests/test_phase_6_baseline.py`
+- Reviewed `total_force_v2` CCCC expansion baseline
 
 ### Phase 7 — Expand to other scenarios
 

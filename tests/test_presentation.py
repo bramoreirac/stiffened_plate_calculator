@@ -74,6 +74,12 @@ class PresentationTests(unittest.TestCase):
         self.assertIn("Plate rigidity D", quantities)
         self.assertIn("Total uniform force", quantities)
         self.assertIn("Full plate area", quantities)
+        self.assertIn(
+            "Overall deflection coefficient βw (informational only)", quantities
+        )
+        self.assertIn(
+            "Overall moment coefficient βm (informational only)", quantities
+        )
         self.assertIn("Composite Ix", quantities)
         self.assertIn("Governing deflection", quantities)
 
