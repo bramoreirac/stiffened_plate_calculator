@@ -4,6 +4,8 @@ An interactive Python application for evaluating rectangular steel plates with o
 
 The first release will reproduce and consolidate the two existing `CCCC` spreadsheets for plates with all four edges clamped. The architecture will allow `SSSS`, `CSCS`, and other analysis scenarios to be added later without duplicating the common calculation logic.
 
+Deployment: https://stiffenedplatecalculator-5rjrsaeuqzvjrqsn99tgmj.streamlit.app
+
 ## Initial analysis scope
 
 - Boundary condition: `CCCC`.
